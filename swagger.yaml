@@ -1,0 +1,770 @@
+swagger: "2.0"
+info:
+  description: GovReady provides a dashboard and tools to enhance security for government websites and achieve FISMA compliance.
+  version: "1.0.0"
+  title: GovReady API
+  termsOfService: http://govready.com/tos
+  contact:
+    name: jeff@proudcity.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+host: api.govready.com
+basePath: /v1
+schemes:
+  - http
+paths:
+  /sites:
+    post:
+      tags:
+        - site
+      summary: Add a new site
+      description: ""
+      operationId: addSite
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Site object that needs to be added
+          required: false
+          schema:
+            $ref: "#/definitions/Site"
+      responses:
+        "405":
+          description: Invalid input
+      security:
+        - govready_auth:
+          - write_sites
+          - read_sites
+    put:
+      tags:
+        - site
+      summary: Update an existing site
+      description: ""
+      operationId: updatesite
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Site object that needs to be added to the store
+          required: false
+          schema:
+            $ref: "#/definitions/Site"
+      responses:
+        "405":
+          description: Validation exception
+        "404":
+          description: Site not found
+        "400":
+          description: Invalid ID supplied
+      security:
+        - govready_auth:
+          - write_sites
+          - read_sites
+  /sites/{siteId}:
+    get:
+      tags:
+        - site
+      summary: Find Site by ID
+      description: Returns a site when ID < 10.  ID > 10 or nonintegers will simulate API error conditions
+      operationId: getsiteById
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: path
+          name: siteId
+          description: ID of site that needs to be fetched
+          required: true
+          type: integer
+          format: int64
+      responses:
+        "404":
+          description: site not found
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Site"
+        "400":
+          description: Invalid ID supplied
+      security:
+        - api_key: []
+        - govready_auth:
+          - write_sites
+          - read_sites
+    post:
+      tags:
+        - site
+      summary: Updates a site with form data
+      description: ""
+      operationId: updatesiteWithForm
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: path
+          name: siteId
+          description: ID of site that needs to be updated
+          required: true
+          type: string
+        - in: formData
+          name: name
+          description: Updated name of the site
+          required: true
+          type: string
+        - in: formData
+          name: status
+          description: Updated status of the site
+          required: true
+          type: string
+      responses:
+        "405":
+          description: Invalid input
+      security:
+        - govready_auth:
+          - write_sites
+          - read_sites
+    delete:
+      tags:
+        - site
+      summary: Deletes a site
+      description: ""
+      operationId: deletesite
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: header
+          name: api_key
+          description: ""
+          required: true
+          type: string
+        - in: path
+          name: siteId
+          description: site id to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Invalid site value
+      security:
+        - govready_auth:
+          - write_sites
+          - read_sites
+  /sites/{siteId}/stack:
+    get:
+      tags:
+        - site
+      summary: Display the site's stack
+      description: Returns a stack when ID < 10.  ID > 10 or nonintegers will simulate API error conditions
+      operationId: getstack
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: path
+          name: siteId
+          description: ID of stack's site
+          required: true
+          type: integer
+          format: int64
+      responses:
+        "404":
+          description: site not found
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Site"
+        "400":
+          description: Invalid ID supplied
+      security:
+        - api_key: []
+        - govready_auth:
+          - write_sites
+          - read_sites
+    post:
+      tags:
+        - site
+      summary: Updates a stack with form data
+      description: ""
+      operationId: updatestackeWithForm
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: path
+          name: siteId
+          description: ID of stack's site
+          required: true
+          type: string
+        - in: formData
+          name: name
+          description: Updated name of the site
+          required: true
+          type: string
+        - in: formData
+          name: status
+          description: Updated status of the site
+          required: true
+          type: string
+      responses:
+        "405":
+          description: Invalid input
+      security:
+        - govready_auth:
+          - write_sites
+          - read_sites
+    delete:
+      tags:
+        - site
+      summary: Deletes a stack
+      description: ""
+      operationId: deletestack
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: header
+          name: api_key
+          description: ""
+          required: true
+          type: string
+        - in: path
+          name: siteId
+          description: site id of stack to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Invalid site value
+      security:
+        - govready_auth:
+          - write_sites
+          - read_sites
+  /sites/{siteId}/plugin:
+    get:
+      tags:
+        - site
+      summary: Display the site's plugin
+      description: Returns a plugin when ID < 10.  ID > 10 or nonintegers will simulate API error conditions
+      operationId: getplugin
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: path
+          name: siteId
+          description: ID of plugin's site
+          required: true
+          type: integer
+          format: int64
+      responses:
+        "404":
+          description: site not found
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/Plugin"
+        "400":
+          description: Invalid ID supplied
+      security:
+        - api_key: []
+        - govready_auth:
+          - write_sites
+          - read_sites
+    post:
+      tags:
+        - site
+      summary: Updates a plugin with form data
+      description: ""
+      operationId: updateplugineWithForm
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: path
+          name: siteId
+          description: ID of plugin's site
+          required: true
+          type: string
+        - in: formData
+          name: name
+          description: Updated name of the site
+          required: true
+          type: string
+        - in: formData
+          name: status
+          description: Updated status of the site
+          required: true
+          type: string
+      responses:
+        "405":
+          description: Invalid input
+      security:
+        - govready_auth:
+          - write_sites
+          - read_sites
+    delete:
+      tags:
+        - site
+      summary: Deletes a plugin
+      description: ""
+      operationId: deleteplugin
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: header
+          name: api_key
+          description: ""
+          required: true
+          type: string
+        - in: path
+          name: siteId
+          description: site id of plugin to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Invalid site value
+      security:
+        - govready_auth:
+          - write_sites
+          - read_sites
+  /users:
+    post:
+      tags:
+        - user
+      summary: Create user
+      description: This can only be done by the logged in user.
+      operationId: createUser
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Created user object
+          required: false
+          schema:
+            $ref: "#/definitions/User"
+      responses:
+        default:
+          description: successful operation
+  /users/createWithArray:
+    post:
+      tags:
+        - user
+      summary: Creates list of users with given input array
+      description: ""
+      operationId: createUsersWithArrayInput
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: List of user object
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/User"
+      responses:
+        default:
+          description: successful operation
+  /users/createWithList:
+    post:
+      tags:
+        - user
+      summary: Creates list of users with given input array
+      description: ""
+      operationId: createUsersWithListInput
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: List of user object
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/User"
+      responses:
+        default:
+          description: successful operation
+  /users/login:
+    get:
+      tags:
+        - user
+      summary: Logs user into the system
+      description: ""
+      operationId: loginUser
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: query
+          name: username
+          description: The user name for login
+          required: false
+          type: string
+        - in: query
+          name: password
+          description: The password for login in clear text
+          required: false
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            type: string
+        "400":
+          description: Invalid username/password supplied
+  /users/logout:
+    get:
+      tags:
+        - user
+      summary: Logs out current logged in user session
+      description: ""
+      operationId: logoutUser
+      produces:
+        - application/json
+        - application/xml
+      responses:
+        default:
+          description: successful operation
+  /users/{username}:
+    get:
+      tags:
+        - user
+      summary: Get user by user name
+      description: ""
+      operationId: getUserByName
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: path
+          name: username
+          description: The name that needs to be fetched. Use user1 for testing.
+          required: true
+          type: string
+      responses:
+        "404":
+          description: User not found
+        "200":
+          description: successful operation
+          schema:
+            $ref: "#/definitions/User"
+        "400":
+          description: Invalid username supplied
+    put:
+      tags:
+        - user
+      summary: Updated user
+      description: This can only be done by the logged in user.
+      operationId: updateUser
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: path
+          name: username
+          description: name that need to be deleted
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Updated user object
+          required: false
+          schema:
+            $ref: "#/definitions/User"
+      responses:
+        "404":
+          description: User not found
+        "400":
+          description: Invalid user supplied
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: path
+          name: username
+          description: The name that needs to be deleted
+          required: true
+          type: string
+      responses:
+        "404":
+          description: User not found
+        "400":
+          description: Invalid username supplied
+securityDefinitions:
+  api_key:
+    type: apiKey
+    name: api_key
+    in: header
+  govready_auth:
+    type: oauth2
+    authorizationUrl: https://govready.auth0.com/authorize
+    flow: implicit
+    scopes:
+      write_sites: modify sites in your account
+      read_sites: read your sites
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      username:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      userStatus:
+        type: integer
+        format: int32
+        description: User Status
+  Site:
+    type: object
+    required:
+      - name
+      - url
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+        example: GovReady
+      url:
+        type: string
+        example: http://govready.com
+        description: Full URL to the site homepage
+      status:
+        type: string
+        example: active
+        description: Site status
+      application:
+        $ref: "#/definitions/Application"
+        description: The Application object this site is built with
+  Stack:
+    type: object
+    required:
+      - site
+    properties:
+      id:
+        type: integer
+        format: int64
+      site:
+        $ref: "#/definitions/Site"
+      os:
+        type: string
+        example: Ubuntu 14.04
+      server:
+        type: string
+        example: Apache 2
+      database:
+        type: string
+        example: MariaDB 5.2 (MySQL variant)
+      language:
+        type: string
+        example: PHP 4.3
+      application:
+        type: string
+        example: WordPress 4.4.2
+      scan:
+        type: object
+        properties:
+          name:
+            type: string
+            example: WordFence 6.0.5
+          state:
+            type: string
+            example: Passing
+          datetime:
+            type: string
+            format: date-time
+      info:
+        type: object
+  Plugin:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      site:
+        $ref: "#/definitions/Site"
+      label:
+        type: string
+        example: GovReday
+      namespace:
+        type: string
+        example: govready
+      status:
+        type: string
+        example: active
+      version:
+        type: string
+        example: active
+  Account:
+    type: object
+    properties:
+      id:
+        type: string
+        format: int64
+      site:
+        $ref: "#/definitions/Site"
+      username:
+        type: string
+      email:
+        type: string
+        format: email
+      created:
+        type: string
+        format: date-time
+      lastLogin:
+        type: string
+        format: date-time
+  Contact:
+    type: object
+    properties:
+      id:
+        type: string
+        format: int64
+      site:
+        $ref: "#/definitions/Site"
+      name:
+        type: string
+      email:
+        type: string
+        format: email
+      phone:
+        type: string
+        format: phone
+      responsibilities:
+        type: string
+        example: Adding accounts, domain renewal
+        description: A description of the responsibilities this person has
+      lastValidated:
+        type: string
+        format: date-time
+  Recommendation:
+    type: object
+    properties:
+      id:
+        type: string
+        format: int64
+      application:
+        $ref: "#/definitions/Application"
+        description: The Application object this recommended module/plugin applies to
+      namespace:
+        type: string
+        example: govready
+      version:
+        type: string
+        example: 1.2.0
+      label:
+        type: string
+        example: GovReday
+      body:
+        type: string
+        description: Text describing why this is recommended
+      link:
+        type: string
+        description: The Read More URL
+  Blacklist:
+    type: object
+    properties:
+      id:
+        type: string
+        format: int64
+      application:
+        $ref: "#/definitions/Application"
+        description: The Application object this recommended module/plugin applies to
+      namespace:
+        type: string
+        example: govready
+      version:
+        type: string
+        example: 1.2.0
+      label:
+        type: string
+        example: GovReday
+      body:
+        type: string
+        description: Text describing why this is blacklisted
+      link:
+        type: string
+        description: The Read More URL
+  News:
+    type: object
+    properties:
+      id:
+        type: string
+        format: int64
+      application:
+        type: array
+        $ref: "#/definitions/Application"
+        description: The Application(s) this notice applies to
+      code:
+        type: string
+        description: The CVE code for the security vulnerabiltiy
+        example: CVE-2014-100000
+      datetime:
+        type: string
+        format: date-time
+      title:
+        type: string
+        example: Drupal 8.0.2 Security Release
+      body:
+        type: string
+        description: News text
+  Application:
+    type: object
+    properties:
+      namespace:
+        type: string
+        example: wordpress
+      label:
+        type: string
+        example: WordPress
+      version:
+        description: string
+        example: 4.4.2
