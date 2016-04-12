@@ -5,7 +5,7 @@ info:
   title: GovReady API
   termsOfService: http://govready.com/tos
   contact:
-    name: jeff@proudcity.com
+    name: ops@govready.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -14,6 +14,54 @@ basePath: /v1
 schemes:
   - http
 paths:
+  /initialize:
+    post:
+      tags:
+        - site
+      summary: Initialize a new site
+      description: ""
+      operationId: initializeSite
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - in: query
+          name: url
+          description: The url (method and domain) of the site that is getting initialized
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: "#/definitions/Site"
+        "405":
+          description: Invalid input
+  /token:
+    post:
+      tags:
+        - site
+      summary: Initialize a new site
+      description: ""
+      operationId: token
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/json
+        - application/xml
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: "#/definitions/Key"
+      security:
+        - govready_auth:
+          - write_sites
+          - read_sites
   /sites:
     post:
       tags:
@@ -539,6 +587,17 @@ securityDefinitions:
       write_sites: modify sites in your account
       read_sites: read your sites
 definitions:
+  Key:
+    type: object
+    properties:
+      key:
+        type: string
+        format: int64
+        description: The API public key
+      secret:
+        type: string
+        format: int64
+        description: The api secret key
   User:
     type: object
     properties:
