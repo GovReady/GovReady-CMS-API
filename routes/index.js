@@ -21,7 +21,7 @@ router.get('/', function(req, res, next) {
 })
 
 router.route('/initialize')
-  .post(helpers.jwtCheck, userController.postInitialize);
+  .post(userController.postInitialize);
 
 router.route('/refresh-token')
   .post(userController.postRefreshToken);
