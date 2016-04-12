@@ -5,6 +5,7 @@ var router = express.Router();
 var helpers = require('../controllers/helpersController');
 var govreadyController = require('../controllers/govreadyController');
 var userController = require('../controllers/userController');
+var siteController = require('../controllers/siteController');
 
 
 /*
@@ -43,4 +44,10 @@ router.route('/sites/:siteId')
   .put(helpers.jwtCheck, siteController.putSite)
   .delete(helpers.jwtCheck, siteController.deleteSite);
 */
+
+router.route('/sites/:siteId')
+  .get(helpers.jwtCheck, siteController.getSite)
+  //.put(helpers.jwtCheck, siteController.putSite)
+  //.delete(helpers.jwtCheck, siteController.deleteSite);
+
 module.exports = router;
