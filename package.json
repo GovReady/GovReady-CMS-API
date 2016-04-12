@@ -19,9 +19,11 @@
     "express": "~4.13.1",
     "express-jwt": "^3.3.0",
     "express-session": "^1.11.3",
+    "fs": "0.0.2",
     "google-auth-library": "^0.9.7",
     "html-to-text": "^2.0.0",
     "jade": "~1.11.0",
+    "js-yaml": "^3.5.5",
     "jsonwebtoken": "^5.7.0",
     "lodash": "^4.6.1",
     "mongoose": "^4.3.3",
@@ -34,6 +36,7 @@
     "passport-auth0": "^0.5.0",
     "request": "^2.67.0",
     "serve-favicon": "~2.3.0",
+    "swagger-tools": "^0.10.1",
     "underscore": "^1.8.3"
   }
 }

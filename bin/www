@@ -7,6 +7,10 @@
 var app = require('../app');
 var debug = require('debug')('nodejs-regular-webapp2:server');
 var http = require('http');
+var swaggerTools = require('swagger-tools');
+var jsyaml = require('js-yaml');
+var fs = require('fs');
+
 
 /**
  * Get port from environment and store in Express.
@@ -15,19 +19,48 @@ var http = require('http');
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
-/**
- * Create HTTP server.
- */
 
+
+
+
+// swaggerRouter configuration
+var options = {
+  swaggerUi: '/swagger.json',
+  controllers: './controllers',
+  useStubs: process.env.NODE_ENV === 'development' ? true : false // Conditionally turn on stubs (mock mode)
+};
+
+// The Swagger document (require it, build it programmatically, fetch it from a URL, ...)
+var spec = fs.readFileSync('swagger.yaml', 'utf8');
+var swaggerDoc = jsyaml.safeLoad(spec);
+
+/**
+   * Create HTTP server.
+   */
 var server = http.createServer(app);
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+// Initialize the Swagger middleware
+swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
+  // Interpret Swagger resources and attach metadata to request - must be first in swagger-tools middleware chain
+  app.use(middleware.swaggerMetadata());
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+  // Validate Swagger requests
+  app.use(middleware.swaggerValidator());
+
+  // Route validated requests to appropriate controller
+  app.use(middleware.swaggerRouter(options));
+
+  // Serve the Swagger documents and Swagger UI
+  app.use(middleware.swaggerUi());
+
+  /**
+   * Listen on provided port, on all network interfaces.
+   */
+  server.listen(port);
+  server.on('error', onError);
+  server.on('listening', onListening);
+});
+
 
 /**
  * Normalize a port into a number, string, or false.
@@ -87,4 +120,5 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
+  console.log('Swagger-ui is available on http://localhost:%d/docs', port);
 }

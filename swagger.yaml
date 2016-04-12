@@ -798,10 +798,6 @@ definitions:
       id:
         type: string
         format: int64
-      application:
-        type: array
-        $ref: "#/definitions/Application"
-        description: The Application(s) this notice applies to
       code:
         type: string
         description: The CVE code for the security vulnerabiltiy
