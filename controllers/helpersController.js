@@ -114,7 +114,7 @@ exports.findSite = function(req, callback) {
 }
 
 
-// Create endpoint /site/{siteId}/posts for GET
+// Endpoint /site/{siteId}/posts for GET
 // @todo: this is only temp, delete
 exports.sendMailTest = function(req, res) {
   console.log(req.body);

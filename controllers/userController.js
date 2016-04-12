@@ -42,10 +42,9 @@ router.route('/users/:userId')
 */
 
 /** 
- * Create endpoint /initialize for POST
+ * Endpoint /initialize for POST
  */
 exports.postInitialize = function(req, res) {
-console.log(req.body);
 
   // Does a site entry already exist?
   Site.findOne( { url: req.body.url } ).then(function (site) {
@@ -91,13 +90,11 @@ console.log(req.body);
     }
   });
 
-  
-
 } // function
 
 
 /** 
- * Create endpoint /refresh-token for POST (anonymous endpoint)
+ * Endpoint /refresh-token for POST (anonymous endpoint)
  */
 exports.postRefreshToken = function(req, res) {
 
@@ -124,7 +121,7 @@ exports.postRefreshToken = function(req, res) {
 
 
 /** 
- * Create endpoint /token for POST
+ * Endpoint /token for POST
  */
 exports.postUser = function(req, res) {
 
