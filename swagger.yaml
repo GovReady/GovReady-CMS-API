@@ -9,8 +9,8 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-host: api.govready.com
-basePath: /v1
+host: plugin.govready.com
+basePath: /v1.0
 schemes:
   - http
 paths:
