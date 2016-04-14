@@ -1,5 +1,5 @@
 # GovReady API
-The GovReday API.  It users [Auth0](http://auth0.com) as the user authentication store, and mongo db as the database.
+The GovReady API.  It users [Auth0](http://auth0.com) as the user authentication store, and mongo db as the database.
 
 
 ## API Documentation
