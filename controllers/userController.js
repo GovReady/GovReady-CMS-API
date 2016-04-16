@@ -22,7 +22,6 @@ var management = new ManagementClient({
   token: process.env.AUTH0_TOKEN,
 });
 
-var auth = 
 
 /*
 router.route('/initialize')
@@ -101,16 +100,28 @@ exports.postRefreshToken = function(req, res) {
   var data = {
     "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer", // @todo?
     'target': process.env.AUTH0_CLIENT_ID,
-    "id_token": req.body.refresh_token,
+    'client_id': process.env.AUTH0_CLIENT_ID,
+    "refresh_token": 'iI3KDzXwjD8fLy3MVJLXqveknV0y93XhomEMEmGeXBdMk',//req.body.refresh_token,
     "api_type": "app",
     'scope': 'openid'
   };
-  auth0.tokens.getDelegationToken( data, function (err, token) {
-    if (err) {
+
+  // Note: auth0.tokens.getDelegationToken() requires an id_token parameter, which we don't necessarily
+  // have, so we call https://govready.auth0.com/delegation manually.
+  var requestData = {
+    url: 'https://' + process.env.AUTH0_DOMAIN + '/delegation',
+    json: true,
+    method: 'POST',
+    body: data
+  };
+  console.log(requestData);
+  request(requestData, function (err, response, body) {
+    if (err || !response.body.id_token) {
       return res.status(500).json(err);
     }
-    return res.status(200).json(token);
+    return res.status(200).json(response.body);
   });
+
 
 } // function
 
