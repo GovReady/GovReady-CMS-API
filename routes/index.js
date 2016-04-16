@@ -50,4 +50,25 @@ router.route('/sites/:siteId')
   //.put(helpers.jwtCheck, siteController.putSite)
   //.delete(helpers.jwtCheck, siteController.deleteSite);
 
+router.route('/sites/:siteId/collect')
+  .post(helpers.jwtCheck, siteController.postSiteCollect)
+  //.put(helpers.jwtCheck, siteController.putSite)
+  //.delete(helpers.jwtCheck, siteController.deleteSite);
+
+router.route('/sites/:siteId/plugins')
+  .post(helpers.jwtCheck, siteController.postSitePlugins)
+
+router.route('/sites/:siteId/accounts')
+  .post(helpers.jwtCheck, siteController.postSiteAccounts)
+
+//router.route('/sites/:siteId/stack')
+  //.post(helpers.jwtCheck, siteController.postSiteCollect)
+  //.put(helpers.jwtCheck, siteController.putSite)
+  //.delete(helpers.jwtCheck, siteController.deleteSite);
+
+router.route('/sites/:siteId/stack/phpinfo')
+  .post(helpers.jwtCheck, siteController.postSiteStackPhpinfo)
+  //.put(helpers.jwtCheck, siteController.putSite)
+  //.delete(helpers.jwtCheck, siteController.deleteSite);
+
 module.exports = router;
