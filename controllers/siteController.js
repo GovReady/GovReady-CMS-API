@@ -42,6 +42,7 @@ exports.postSiteAccounts = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     site.accounts = req.body.accounts;
+    console.log('Accounts', site.accounts);
     site.save();
     return res.status(200).json(site);  
   });
@@ -57,6 +58,7 @@ exports.postSitePlugins = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     site.plugins = req.body.plugins;
+    console.log('Plugins', site.plugins);
     site.save();
     return res.status(200).json(site);  
   });
@@ -73,7 +75,9 @@ exports.postSiteStackPhpinfo = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
 
+
     var phpinfo = req.body.phpinfo;
+
     site.stack = {
       'os': phpinfo['uname'],
       'server': phpinfo['PHP Variables']['_SERVER["SERVER_SOFTWARE"]'],
@@ -83,11 +87,13 @@ exports.postSiteStackPhpinfo = function(req, res) {
       'info': phpinfo,      
     }
 
+
     if ( phpinfo.mysql != undefined ) {
       site.stack.database = 'Mysql ' + phpinfo.mysql['Client API version'];
     }
     // @todo: mariadb...
-
+  
+    console.log('Stack', site.stack);
     site.save();
 
     return res.status(200).json(site);

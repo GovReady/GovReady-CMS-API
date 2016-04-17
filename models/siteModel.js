@@ -12,13 +12,11 @@ var SiteSchema   = new mongoose.Schema({
   lang: String,
   icon: Object,
   logo: String,
-  wordpress: Object,
-  location: Object,
-  location: Object,
-  siteOptions: Object,
-  updates: Object,
-  meta: Object,
-  plan: Object
+  plugins: Object,
+  accounts: Object,
+  stack: Object,
+  monitor: Object,
+  status: Object
 });
 
 // Export the Mongoose model
