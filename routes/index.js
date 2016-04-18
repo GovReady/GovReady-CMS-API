@@ -57,11 +57,14 @@ router.route('/sites/:siteId/collect')
 
 router.route('/sites/:siteId/plugins')
   .post(helpers.jwtCheck, siteController.postSitePlugins)
+  .get(helpers.jwtCheck, siteController.getSitePlugins)
 
 router.route('/sites/:siteId/accounts')
   .post(helpers.jwtCheck, siteController.postSiteAccounts)
+  .get(helpers.jwtCheck, siteController.getSiteAccounts)
 
-//router.route('/sites/:siteId/stack')
+router.route('/sites/:siteId/stack')
+  .get(helpers.jwtCheck, siteController.getSiteStack)
   //.post(helpers.jwtCheck, siteController.postSiteCollect)
   //.put(helpers.jwtCheck, siteController.putSite)
   //.delete(helpers.jwtCheck, siteController.deleteSite);

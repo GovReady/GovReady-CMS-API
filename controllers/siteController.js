@@ -51,6 +51,22 @@ exports.postSiteAccounts = function(req, res) {
 
 
 /** 
+ * Endpoint /sites/:siteId/accounts for GET
+ */
+exports.getSiteAccounts = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+    if (!site.accounts) {
+      return res.status(500);  
+    }
+    return res.status(200).json(site.accounts);
+  });
+
+} // function
+
+
+/** 
  * Endpoint /sites/:siteId/plugins for POST
  */
 exports.postSitePlugins = function(req, res) {
@@ -61,6 +77,22 @@ exports.postSitePlugins = function(req, res) {
     console.log('Plugins', site.plugins);
     site.save();
     return res.status(200).json(site);  
+  });
+
+} // function
+
+
+/** 
+ * Endpoint /sites/:siteId/accounts for GET
+ */
+exports.getSitePlugins = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+    if (!site.accounts) {
+      return res.status(500);  
+    }
+    return res.status(200).json(site.plugins);
   });
 
 } // function
@@ -97,6 +129,23 @@ exports.postSiteStackPhpinfo = function(req, res) {
     site.save();
 
     return res.status(200).json(site);
+  });
+
+} // function
+
+
+/** 
+ * Endpoint /sites/:siteId/stack for GET
+ */
+exports.getSiteStack = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+    console.log(site);
+    if (!site.stack) {
+      return res.status(500);  
+    }
+    return res.status(200).json(site.stack);
   });
 
 } // function
