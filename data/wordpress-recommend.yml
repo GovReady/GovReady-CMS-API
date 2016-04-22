@@ -1,0 +1,30 @@
+- title: Wordfence
+  namespace: wordfence
+  free: true
+  paid: $4.92/mo
+  description: |
+    "The most downloaded WordPress security plugin." Regular security scans cross-reference
+    your website with their proprietary "Threat Defense Feed" to ensure that your website is
+    secure and alerts you in the event your site is compromised.
+- title: WP Security Audit Log
+  namespace: wp-security-audit-log
+  free: true
+  paid: Addons start at $59/yr
+  description: |
+    Keep an audit log of everything that is happening on your WordPress site, including user 
+    registrations, post publishing, plugin and theme installations, user logins, and failed'
+    user logins.
+- title: VaultPress
+  namespace: vaultpress
+  free: false
+  paid: From $99/yr or $9/mo
+  description: |
+    A real-time backup and security scanning service designed and built by Automattic, the
+    company behind WordPress.com.
+- title: WP-DB-Backup
+  namespace: wp-db-backup
+  free: true
+  paid: false
+  description: |
+    Easily to backup your core WordPress database tables. You may also backup other 
+    tables in the same database.
