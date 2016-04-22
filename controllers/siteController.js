@@ -118,7 +118,7 @@ exports.postSiteStackPhpinfo = function(req, res) {
       'database': null,
       'application': phpinfo['application'],
       'language': phpinfo['php'],
-      'info': phpinfo,      
+      //'info': phpinfo,      
     }
 
 

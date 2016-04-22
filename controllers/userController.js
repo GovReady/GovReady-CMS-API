@@ -44,13 +44,18 @@ router.route('/users/:userId')
  * Endpoint /initialize for POST
  */
 exports.postInitialize = function(req, res) {
-
+console.log(req.body.url);
   // Does a site entry already exist?
   Site.findOne( { url: req.body.url } ).then(function (site) {
     
     // Does a Site object already exist?
     if (site) {
-      return res.status(200).json( site );
+      var out = {
+        _id: site._id,
+        url: site.url,
+        status: site.status
+      }
+      return res.status(200).json( out );
     }
     // Update the allowed_origins (CORS) in Auth0 and created the Site object
     else {
