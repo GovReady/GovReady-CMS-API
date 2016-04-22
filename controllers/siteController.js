@@ -191,7 +191,7 @@ exports.getSiteSecurity = function(req, res) {
 
 
 /** 
- * Endpoint /sites/:siteId/vulnerabilites for GET
+ * Endpoint /sites/:siteId/vulnerabilities for GET
  */
 exports.getSiteVulnerabilities = function(req, res) {
 
