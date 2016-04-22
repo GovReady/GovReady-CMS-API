@@ -74,4 +74,10 @@ router.route('/sites/:siteId/stack/phpinfo')
   //.put(helpers.jwtCheck, siteController.putSite)
   //.delete(helpers.jwtCheck, siteController.deleteSite);
 
+router.route('/sites/:siteId/recommended')
+  .get(helpers.jwtCheck, siteController.getSiteRecommended)
+
+router.route('/sites/:siteId/vulnerabilites')
+  .get(helpers.jwtCheck, siteController.getSiteVulnerabilites)
+
 module.exports = router;
