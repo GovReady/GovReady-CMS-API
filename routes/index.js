@@ -6,6 +6,8 @@ var helpers = require('../controllers/helpersController');
 var govreadyController = require('../controllers/govreadyController');
 var userController = require('../controllers/userController');
 var siteController = require('../controllers/siteController');
+var contactController = require('../controllers/contactController');
+var applicationController = require('../controllers/applicationController');
 
 
 /*
@@ -79,5 +81,22 @@ router.route('/sites/:siteId/recommended')
 
 router.route('/sites/:siteId/vulnerabilities')
   .get(helpers.jwtCheck, siteController.getSiteVulnerabilities)
+
+
+router.route('/sites/:siteId/contacts')
+  .get(helpers.jwtCheck, contactController.getSiteContacts)
+  .post(helpers.jwtCheck, contactController.postSiteContact)
+
+router.route('/sites/:siteId/contacts/:contactId')
+  .get(helpers.jwtCheck, contactController.getSiteContact)
+  .patch(helpers.jwtCheck, contactController.patchSiteContact)
+  .delete(helpers.jwtCheck, contactController.deleteSiteContact)
+
+
+
+router.route('/applications/:app/news')
+  .get(applicationController.getApplicationNews)
+
+
 
 module.exports = router;
