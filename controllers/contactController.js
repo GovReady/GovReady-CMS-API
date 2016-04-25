@@ -78,7 +78,7 @@ exports.patchSiteContact = function(req, res) {
     Contact.findOne( { contactId: req.params.contactId } )
     .then(function (contact) {
       
-      contact = merge(contact, req.body.contact);
+      contact = merge(contact, req.body);
       contact.save();
       return res.status(200).json( contact );
 
