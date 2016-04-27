@@ -12,18 +12,14 @@ var mongoose = require('mongoose');
 var cors = require('cors');
 var jwt = require('express-jwt');
 
+
 dotenv.load();
 
 // Connect to the proudcity MongoDB
 mongoose.connect(process.env.DB_CONNECTION);
 
 var routes = require('./routes/index');
-//var user = require('./routes/user');
-//var wp = require('./routes/wp');
-//var wpRead = require('./routes/wpRead');
-//var proudcity = require('./routes/proudcity');
-//var siteController = require('./controllers/site');
-//var wpController = require('./controllers/wp');
+
 
 // This will configure Passport to use Auth0
 var strategy = new Auth0Strategy({
