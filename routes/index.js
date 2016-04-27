@@ -8,6 +8,7 @@ var userController = require('../controllers/userController');
 var siteController = require('../controllers/siteController');
 var contactController = require('../controllers/contactController');
 var applicationController = require('../controllers/applicationController');
+var monitorController = require('../controllers/monitorController');
 
 
 /*
@@ -76,6 +77,13 @@ router.route('/sites/:siteId/stack/phpinfo')
   //.put(helpers.jwtCheck, siteController.putSite)
   //.delete(helpers.jwtCheck, siteController.deleteSite);
 
+router.route('/sites/:siteId/domain')
+  .get(helpers.jwtCheck, siteController.getSiteDomain)
+
+router.route('/sites/:siteId/status')
+  .get(helpers.jwtCheck, siteController.getSiteStatus)
+
+
 router.route('/sites/:siteId/recommended')
   .get(helpers.jwtCheck, siteController.getSiteRecommended)
 
@@ -96,6 +104,10 @@ router.route('/sites/:siteId/contacts/:contactId')
 
 router.route('/applications/:app/news')
   .get(applicationController.getApplicationNews)
+
+
+router.route('/monitor/:siteId/:callback')
+  .get(monitorController.getMonitor)
 
 
 

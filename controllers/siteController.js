@@ -60,7 +60,7 @@ exports.getSiteAccounts = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     if (!site.accounts) {
-      return res.status(500);  
+      return res.status(500).json();  
     }
     return res.status(200).json(site.accounts);
   });
@@ -92,7 +92,7 @@ exports.getSitePlugins = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     if (!site.accounts) {
-      return res.status(500);  
+      return res.status(500).json();  
     }
     return res.status(200).json(site.plugins);
   });
@@ -145,9 +145,41 @@ exports.getSiteStack = function(req, res) {
   .then(function (site) {
     console.log(site);
     if (!site.stack) {
-      return res.status(500);  
+      return res.status(500).json();  
     }
     return res.status(200).json(site.stack);
+  });
+
+} // function
+
+
+/** 
+ * Endpoint /sites/:siteId/domain for GET
+ */
+exports.getSiteDomain = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+    if (!site.domain) {
+      return res.status(500).json();  
+    }
+    return res.status(200).json(site.domain);
+  });
+
+} // function
+
+
+/** 
+ * Endpoint /sites/:siteId/status for GET
+ */
+exports.getSiteStatus = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+    if (!site.status) {
+      return res.status(500).json();  
+    }
+    return res.status(200).json(site.status);
   });
 
 } // function
@@ -166,7 +198,7 @@ exports.getSiteRecommended = function(req, res) {
       console.log(doc);
       return res.status(200).json(doc);
     } catch (e) {
-      return res.status(500);
+      return res.status(500).json();
     }
   });
 
@@ -182,7 +214,7 @@ exports.getSiteSecurity = function(req, res) {
   .then(function (site) {
     console.log(site);
     if (!site.stack) {
-      return res.status(500);  
+      return res.status(500).json();  
     }
     return res.status(200).json(site.stack);
   });
