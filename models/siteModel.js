@@ -15,7 +15,7 @@ var SiteSchema   = new mongoose.Schema({
   plugins: Object,
   accounts: Object,
   stack: Object,
-  monitor: Object,
+  domain: Object,
   status: Object
 });
 
