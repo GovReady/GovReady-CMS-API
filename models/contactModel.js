@@ -2,14 +2,14 @@
 var mongoose = require('mongoose');
 
 // Define our beer schema
-var ContactSchema   = new mongoose.Schema({
+var ContactSchema = new mongoose.Schema({
   siteId: String,
   name: String,
   department: String,
   title: String,
   email: String,
   phone: String,
-  responsiblity: String,
+  responsibility: String,
   lastConfirmed: String,
   sub: String
 });
