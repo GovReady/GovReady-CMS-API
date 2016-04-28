@@ -36,7 +36,7 @@ exports.getSiteContact = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     
-    Contact.findOne( { contactId: req.params.contactId } )
+    Contact.findOne( { _id: req.params.contactId } )
     .then(function (contact) {
       
       return res.status(200).json( contact ); 
@@ -96,16 +96,18 @@ exports.deleteSiteContact = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
-    
-    Contact.findOne( { contactId: req.params.contactId } )
+
+    Contact.findOne( { _id: req.params.contactId } )
     .then(function (contact) {
-      
+      if (!contact) {
+        return res.status(500).json( { error: 'Contact not found' } );
+      }  
       contact.remove(function (err) {
         if (err) {
           return res.status(500).json( { error: err } );
         }
         else {
-          return res.status(200).json( contact );
+          return res.status(200).json( {deleted: true, _id: contact._id} );
         }
       });
       
