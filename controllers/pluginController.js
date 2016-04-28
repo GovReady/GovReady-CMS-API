@@ -41,7 +41,7 @@ exports.getSiteVulnerabilities = function(req, res) {
       namespace: site.stack ? site.stack.application.version.replace('.', '') : null,
       version: site.stack ? site.stack.application.version : null
     });
-    console.log('PLUGINS TO LOOKUP', site.plugins);
+    //console.log('PLUGINS TO LOOKUP', site.plugins);
     var dateCutoff = new Date();
     dateCutoff.setDate(dateCutoff.getDate() - 7);
     site.plugins.forEach(function(item, i) {
@@ -51,7 +51,7 @@ exports.getSiteVulnerabilities = function(req, res) {
         .then(function (plugin) {
           //console.log('PLUGIN FOUND', plugin);
 
-          if (plugin === null || dateCutoff > plugin.fetched || item.type === 'wordpresses') {
+          if (plugin === null || dateCutoff > plugin.fetched) {
             getWordPressPluginVulnerabilities(item.type ? item.type : 'plugins', item.namespace, function(err, data) {
               cb(err, data);
             });
@@ -68,7 +68,8 @@ exports.getSiteVulnerabilities = function(req, res) {
     async.parallel(functions, function(err, results){
       var out = [];
       
-      results.forEach(function(plugin, i) {
+      for (var i in results) {
+        var plugin = results[i];
         if (plugin && plugin.vulnerabilities) {
 
           var vulnerabilities = [];
@@ -77,6 +78,7 @@ exports.getSiteVulnerabilities = function(req, res) {
           });
           //console.log('PLUGIN', plugin);
           if (item) {
+            item = item[0];
             plugin.vulnerabilities.forEach(function(vulnerability, j) {
               //item.version = '0.0.0'; // @todo: this is for testing only!!!
               if (vulnerability.fixed_in > item.version) {
@@ -90,7 +92,7 @@ exports.getSiteVulnerabilities = function(req, res) {
           }
 
         } // if (plugin && plugin.vulnerabilities)
-      }); // forEach
+      }; // forEach
 
       return res.status(200).json( out );
 
@@ -108,12 +110,9 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
   }
 
   var url = 'https://wpvulndb.com/api/v2/' + type +'/'+ name;
-  console.log(type);
-  console.log(name);
   
   request(url, function (err, res, body) {
     console.log('CALLING WPVULNDB ('+ res.statusCode +'): ' + url);
-    console.log(name);
     if (!err && res.statusCode == 200) {
       body = JSON.parse(body);
       // Clean up the output, check if this is a WordPress Core call
@@ -123,7 +122,7 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
       data.fetched = Date.now();
       if (key != name) {
         data.version = key;
-        data.name = 'wordpress';
+        data.application = 'wordpress';
         data.type = 'application';
       }
       plugin = new Plugin(data);
@@ -137,9 +136,9 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
       });
       plugin.save();
       err = body;
-      body = null;
+      data = null;
     }
-    cb(err, body);
+    cb(err, data);
   });
 }
 
