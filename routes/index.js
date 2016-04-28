@@ -99,7 +99,7 @@ router.route('/sites/:siteId/contacts/:contactId')
 
 // Plugins
 router.route('/plugins')
-  .get(helpers.jwtCheck, pluginController.getPlugins)
+  .get(pluginController.getPlugins)
 
 router.route('/sites/:siteId/vulnerabilities')
   .get(helpers.jwtCheck, pluginController.getSiteVulnerabilities)
