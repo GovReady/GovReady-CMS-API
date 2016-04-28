@@ -1,9 +1,12 @@
-# GovReady API
-This GovReady API.  It uses [Auth0](http://auth0.com) as the user authentication 
-store, and mongo db as the database, and RabbitMQ as the task queue.
+# GovReady CMS API
+The GovReady CMS API Service is used in conjuction with the [GovReady WordPress Agent](https://github.com/GovReady/GovReady-WordPress-Agent) to provide cybersecurity, compliance, and 
+operations and maintenance status information. 
+
+The GovReady CMS API uses [Auth0](http://auth0.com) as the user authentication store, mongo db as the 
+database, and RabbitMQ as the task queue.
 
 When a new Agent -- such as a [WordPress](https://github.com/GovReady/GovReady-WordPress-Agent/issues/13)
- or Drupal (@todo, coming soon) plugin -- is initialized, a new site is created in the GovReady API.  
+ or Drupal (@todo, coming soon) plugin -- is initialized, a new site is created in the GovReady CMS API.  
 The API will then begin collecting information about the site by requesting information 
 from the Agent (WordPress site), or polling site site.  It also serves as a store for 
 information collected manually within the Agent user interface.
