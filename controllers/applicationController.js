@@ -33,3 +33,45 @@ exports.getApplicationNews = function(req, res) {
 
 
 
+/** 
+ * Endpoint /applications POST
+ */
+exports.postApplication = function(req, res) {
+
+  var app = new Application(req.body);
+  app.save();
+  return res.status(200).json( app ); 
+
+} // function
+
+
+/** 
+ * Endpoint /applications for GET
+ */
+exports.getApplications = function(req, res) {
+  
+  Application.find( {} )
+  .then(function (applications) {
+    
+    return res.status(200).json( applications ); 
+
+  });
+    
+} // function
+
+
+/** 
+ * Endpoint /applications/:application for GET
+ */
+exports.getApplication = function(req, res) {
+  
+  Application.findOne( { name: req.params.application } )
+  .then(function (application) {
+    
+    return res.status(200).json( application ); 
+
+  });
+    
+} // function
+
+

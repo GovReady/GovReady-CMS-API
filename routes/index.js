@@ -6,6 +6,7 @@ var helpers = require('../controllers/helpersController');
 var govreadyController = require('../controllers/govreadyController');
 var userController = require('../controllers/userController');
 var siteController = require('../controllers/siteController');
+var pluginController = require('../controllers/pluginController');
 var contactController = require('../controllers/contactController');
 var applicationController = require('../controllers/applicationController');
 var monitorController = require('../controllers/monitorController');
@@ -83,13 +84,8 @@ router.route('/sites/:siteId/domain')
 router.route('/sites/:siteId/status')
   .get(helpers.jwtCheck, siteController.getSiteStatus)
 
-
 router.route('/sites/:siteId/recommended')
   .get(helpers.jwtCheck, siteController.getSiteRecommended)
-
-router.route('/sites/:siteId/vulnerabilities')
-  .get(helpers.jwtCheck, siteController.getSiteVulnerabilities)
-
 
 router.route('/sites/:siteId/contacts')
   .get(helpers.jwtCheck, contactController.getSiteContacts)
@@ -101,12 +97,30 @@ router.route('/sites/:siteId/contacts/:contactId')
   .delete(helpers.jwtCheck, contactController.deleteSiteContact)
 
 
+// Plugins
+router.route('/plugins')
+  .get(helpers.jwtCheck, pluginController.getPlugins)
+
+router.route('/sites/:siteId/vulnerabilities')
+  .get(helpers.jwtCheck, pluginController.getSiteVulnerabilities)
+
+
+// Applications
+// @todo: these are all 404ing currently
+router.route('/applications')
+  .post(applicationController.postApplication)
+  .get(applicationController.getApplications);
+
+router.route('/applications/:application')
+  .get(applicationController.getApplication);
 
 router.route('/applications/:app/news')
-  .get(applicationController.getApplicationNews)
+  .get(applicationController.getApplicationNews);
 
 
+// Monitors
 router.route('/monitor/:siteId/:callback')
+  .post(monitorController.getMonitor)
   .get(monitorController.getMonitor)
 
 
