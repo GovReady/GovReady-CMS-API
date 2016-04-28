@@ -31,7 +31,6 @@ var strategy = new Auth0Strategy({
     // accessToken is the token to call Auth0 API (not needed in the most cases)
     // extraParams.id_token has the JSON Web Token
     // profile has all the information from the user
-    console.log(profile);
     return done(null, profile);
   });
 
@@ -72,7 +71,6 @@ app.use(cors());
 app.use('/v1.0', routes);
 
 app.use(function(err, req, res, next) {
-  console.log(err.status);
   if (err.status !== 403 && err.status !== 401) return next();
   var body = {
     error: "authorization_required",
