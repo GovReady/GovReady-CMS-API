@@ -31,24 +31,19 @@ https://devcenter.heroku.com/articles/asynchronous-web-worker-model-using-rabbit
 
 var monitors = {
   "ping": {
-    "frequency": 300, // 5m
-    "callback": exports.ping
+    "frequency": 300 // 5m
   },
   "domain": {
-    "frequency": 604800, // 1wk
-    "callback": exports.domain
+    "frequency": 604800 // 1wk
   },
   "plugins": {
-    "frequency": 86400, // 1d
-    "callback": exports.plugins
+    "frequency": 86400 // 1d
   },
   "accounts": {
-    "frequency": 86400, // 1d
-    "callback": exports.accounts
+    "frequency": 86400 // 1d
   },
   "stack": {
-    "frequency": 604800, // 1wk
-    "callback": exports.stack
+    "frequency": 604800 // 1wk
   }
 };
 
@@ -77,14 +72,17 @@ exports.getMonitor = function(req, res) {
 exports.trigger = function(site, key, endpoint, cb) {
   var data = {
     url: site.url + '/wp-admin/admin-ajax.php?action=govready_v1_trigger',
-    json: true,
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+    },
     method: 'POST',
-    body: {
+    form: {
       key: key,
       endpoint: endpoint,
-      siteId: site._id
+      siteId: site._id.toString()
     }
   };
+  console.log('CALLING SITE TRIGGER: ', data);
   request(data, function (error, res, body) {
     if (!error && res.statusCode === 200) {
       cb(null, body);
@@ -184,6 +182,7 @@ exports.ping = function(site, cb) {
       var cert = res.socket.getPeerCertificate();
       site.domain.ssl = {
         allowed: true,
+        forced: true,
         expires: new Date(cert.valid_to).toISOString(),
         created: new Date(cert.valid_from).toISOString(),
         cert: cert
