@@ -7,6 +7,7 @@ var PluginSchema = new mongoose.Schema({
   fetched: Date,
   application: String,
   version: String,
+  type: String,
   release_date: String,
   changelog_url: String,
   vulnerabilities: Array,

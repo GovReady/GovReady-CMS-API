@@ -38,19 +38,21 @@ exports.getSiteVulnerabilities = function(req, res) {
     var functions = [];
     site.plugins.unshift({
       type: 'wordpresses',
-      name: site.stack ? site.stack.application.version.replace('.', '') : null,
+      namespace: site.stack ? site.stack.application.version.replace('.', '') : null,
       version: site.stack ? site.stack.application.version : null
     });
+    console.log('PLUGINS TO LOOKUP', site.plugins);
     var dateCutoff = new Date();
     dateCutoff.setDate(dateCutoff.getDate() - 7);
     site.plugins.forEach(function(item, i) {
 
       functions.push(function( cb ) {
-        Site.findOne( { name: item.namespace } )
+        Plugin.findOne( { name: item.namespace } )
         .then(function (plugin) {
+          //console.log('PLUGIN FOUND', plugin);
 
-          if (plugin === null || dateCutoff > plugin.fetched) {
-            getWordPressPluginVulnerabilities('plugins', item.namespace, function(err, data) {
+          if (plugin === null || dateCutoff > plugin.fetched || item.type === 'wordpresses') {
+            getWordPressPluginVulnerabilities(item.type ? item.type : 'plugins', item.namespace, function(err, data) {
               cb(err, data);
             });
           }
@@ -64,54 +66,78 @@ exports.getSiteVulnerabilities = function(req, res) {
     }); // forEach
 
     async.parallel(functions, function(err, results){
-      console.log(results);
-      console.log(console.log(site.plugins));
       var out = [];
       
       results.forEach(function(plugin, i) {
-        var vulnerabilities = [];
-        var item = site.plugins.filter(function(v){
-          return v.namespace == plugin.name;
-        });
-        if (item) {
-          plugin.vulnerabilities.forEach(function(vulnerability, j) {
-            if (vulnerability.fixed_in < item.version) {
-              vulnerabilities.push(vulnerability);
-            }
+        if (plugin && plugin.vulnerabilities) {
+
+          var vulnerabilities = [];
+          var item = site.plugins.filter(function(v){
+            return v.namespace == plugin.name;
           });
-          if (vulnerabilities.length) {
-            plugin.vulnerabilities = vulnerabilities;
-            out.push(plugin);
+          //console.log('PLUGIN', plugin);
+          if (item) {
+            plugin.vulnerabilities.forEach(function(vulnerability, j) {
+              //item.version = '0.0.0'; // @todo: this is for testing only!!!
+              if (vulnerability.fixed_in > item.version) {
+                vulnerabilities.push(vulnerability);
+              }
+            });
+            if (vulnerabilities.length) {
+              plugin.vulnerabilities = vulnerabilities;
+              out.push(plugin);
+            }
           }
-        }
-        
-        console.log(plugin.name);
-        console.log(item);
 
-        //if ()
+        } // if (plugin && plugin.vulnerabilities)
       }); // forEach
+
+      return res.status(200).json( out );
+
     }); // async 
-
-
-    return res.status(200).json();
 
   });
 } // function
 
 
+// Pings wpvulndb.com to get information about WordPress plugin vulnerabilities
 var getWordPressPluginVulnerabilities = function(type, name, cb) {
+  // Known plugins without a release
+  if (name.indexOf('hello.php') !== -1 || name.indexOf('GovReady') !== -1) {
+    return cb(true, null);
+  }
+
   var url = 'https://wpvulndb.com/api/v2/' + type +'/'+ name;
+  console.log(type);
+  console.log(name);
   
   request(url, function (err, res, body) {
     console.log('CALLING WPVULNDB ('+ res.statusCode +'): ' + url);
+    console.log(name);
     if (!err && res.statusCode == 200) {
       body = JSON.parse(body);
-      body = body[name];
-      body.name = name;
-      body.fetched = Date.now();
-      plugin = new Plugin(body);
+      // Clean up the output, check if this is a WordPress Core call
+      var key = Object.keys(body)[0];
+      data = body[key];
+      data.name = name;
+      data.fetched = Date.now();
+      if (key != name) {
+        data.version = key;
+        data.name = 'wordpress';
+        data.type = 'application';
+      }
+      plugin = new Plugin(data);
       plugin.save();
-      console.log(plugin);
+      console.log('SAVING PLUGIN: '+plugin);
+    }
+    else if (!err) {
+      plugin = new Plugin( {
+        name: name,
+        fetched: Date.now()
+      });
+      plugin.save();
+      err = body;
+      body = null;
     }
     cb(err, body);
   });
