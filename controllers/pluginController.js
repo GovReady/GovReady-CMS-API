@@ -78,7 +78,6 @@ exports.getSiteVulnerabilities = function(req, res) {
           });
           //console.log('PLUGIN', plugin);
           if (item) {
-            item = item[0];
             plugin.vulnerabilities.forEach(function(vulnerability, j) {
               //item.version = '0.0.0'; // @todo: this is for testing only!!!
               if (vulnerability.fixed_in > item.version) {
