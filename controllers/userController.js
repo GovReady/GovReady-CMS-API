@@ -45,14 +45,13 @@ router.route('/users/:userId')
  */
 exports.postInitialize = function(req, res) {
 console.log(req.body.url);
-  
-  /*
-  // We decided to not do any site de-duping: https://github.com/GovReady/GovReady-CMS-API/issues/29
   // Does a site entry already exist?
   Site.findOne( { url: req.body.url } ).then(function (site) {
     
     // Does a Site object already exist?
-    if (site) {
+    // Note: we disable de-duping by site.url in https://github.com/GovReady/GovReady-CMS-API/issues/29
+    /*
+    if  {
       var out = {
         _id: site._id,
         url: site.url,
@@ -60,46 +59,62 @@ console.log(req.body.url);
       }
       return res.status(200).json( out );
     }
+    */
+
     // Update the allowed_origins (CORS) in Auth0 and created the Site object
-    else {
-      // @todo: where all of the logic went
-    }
-  });*/
-
-  // Get the Client (application) object
-  management
-    .clients.get( { client_id: process.env.AUTH0_CLIENT_ID } )
-    .then(function (client) {
-      console.log(client);
-
-      // Update the Auth0 Client
-      client.allowed_origins.push( req.body.url );
-      var data = {
-        allowed_origins: client.allowed_origins
-      }
+    if (!site) {
+      // Get the Client (application) object
       management
-        .clients.update( { client_id: process.env.AUTH0_CLIENT_ID }, data )
+        .clients.get( { client_id: process.env.AUTH0_CLIENT_ID } )
         .then(function (client) {
-          // Create monogo Site            
-          var site = new Site({
-            'url': req.body.url,
-            status: 0
-          });
-          site.save();
+          console.log(client);
 
-          return res.status(200).json(site);
+          // Update the Auth0 Client
+          client.allowed_origins.push( req.body.url );
+          var data = {
+            allowed_origins: client.allowed_origins
+          }
+          management
+            .clients.update( { client_id: process.env.AUTH0_CLIENT_ID }, data )
+            .then(function (client) {
+
+              createSite(req, function(site){
+                return res.status(200).json(site);
+              });
+
+            })
+            .catch(function (err) {
+              return res.status(500).json(err);
+            }); // auth0.clients.update()
 
         })
         .catch(function (err) {
           return res.status(500).json(err);
-        }); // auth0.clients.update()
+        }); // auth0.clients.get()
+    }
 
-    })
-    .catch(function (err) {
-      return res.status(500).json(err);
-    }); // auth0.clients.get()
+    // No need to update cors, just create the mongo Site
+    else {
+      createSite(req, function(site){
+        return res.status(200).json(site);
+      });
+    }
+  });
 
 } // function
+
+// Helper function creates mongo Site
+var createSite = function(req, cb) {
+  // Create monogo Site            
+  var site = new Site({
+    'url': req.body.url,
+    status: 0
+  });
+  site.save();
+  console.log(site);
+  cb(site);
+}
+
 
 
 /** 
