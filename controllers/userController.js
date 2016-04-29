@@ -45,6 +45,9 @@ router.route('/users/:userId')
  */
 exports.postInitialize = function(req, res) {
 console.log(req.body.url);
+  
+  /*
+  // We decided to not do any site de-duping: https://github.com/GovReady/GovReady-CMS-API/issues/29
   // Does a site entry already exist?
   Site.findOne( { url: req.body.url } ).then(function (site) {
     
@@ -59,40 +62,42 @@ console.log(req.body.url);
     }
     // Update the allowed_origins (CORS) in Auth0 and created the Site object
     else {
-      // Get the Client (application) object
+      // @todo: where all of the logic went
+    }
+  });*/
+
+  // Get the Client (application) object
+  management
+    .clients.get( { client_id: process.env.AUTH0_CLIENT_ID } )
+    .then(function (client) {
+      console.log(client);
+
+      // Update the Auth0 Client
+      client.allowed_origins.push( req.body.url );
+      var data = {
+        allowed_origins: client.allowed_origins
+      }
       management
-        .clients.get( { client_id: process.env.AUTH0_CLIENT_ID } )
+        .clients.update( { client_id: process.env.AUTH0_CLIENT_ID }, data )
         .then(function (client) {
-          console.log(client);
+          // Create monogo Site            
+          var site = new Site({
+            'url': req.body.url,
+            status: 0
+          });
+          site.save();
 
-          // Update the Auth0 Client
-          client.allowed_origins.push( req.body.url );
-          var data = {
-            allowed_origins: client.allowed_origins
-          }
-          management
-            .clients.update( { client_id: process.env.AUTH0_CLIENT_ID }, data )
-            .then(function (client) {
-              // Create monogo Site            
-              var site = new Site({
-                'url': req.body.url,
-                status: 0
-              });
-              site.save();
-
-              return res.status(200).json(site);
-
-            })
-            .catch(function (err) {
-              return res.status(500).json(err);
-            }); // auth0.clients.update()
+          return res.status(200).json(site);
 
         })
         .catch(function (err) {
           return res.status(500).json(err);
-        }); // auth0.clients.get()
-    }
-  });
+        }); // auth0.clients.update()
+
+    })
+    .catch(function (err) {
+      return res.status(500).json(err);
+    }); // auth0.clients.get()
 
 } // function
 
