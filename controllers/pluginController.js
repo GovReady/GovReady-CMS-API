@@ -68,6 +68,7 @@ exports.getSiteVulnerabilities = function(req, res) {
     async.parallel(functions, function(err, results){
       var out = [];
       
+      //console.log('PLUGIN RESULTS', results);
       for (var i in results) {
         var plugin = results[i];
         if (plugin && plugin.vulnerabilities) {
@@ -78,8 +79,10 @@ exports.getSiteVulnerabilities = function(req, res) {
           });
           //console.log('PLUGIN', plugin);
           if (item) {
+            item = item[0];
             plugin.vulnerabilities.forEach(function(vulnerability, j) {
               //item.version = '0.0.0'; // @todo: this is for testing only!!!
+              //console.log(vulnerability.fixed_in, item.version);
               if (vulnerability.fixed_in > item.version) {
                 vulnerabilities.push(vulnerability);
               }
@@ -111,7 +114,7 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
   var url = 'https://wpvulndb.com/api/v2/' + type +'/'+ name;
   
   request(url, function (err, res, body) {
-    console.log('CALLING WPVULNDB ('+ res.statusCode +'): ' + url);
+    //console.log('CALLING WPVULNDB ('+ res.statusCode +'): ' + url);
     if (!err && res.statusCode == 200) {
       body = JSON.parse(body);
       // Clean up the output, check if this is a WordPress Core call
@@ -126,7 +129,7 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
       }
       plugin = new Plugin(data);
       plugin.save();
-      console.log('SAVING PLUGIN: '+plugin);
+      //console.log('SAVING PLUGIN: '+plugin);
     }
     else if (!err) {
       plugin = new Plugin( {
