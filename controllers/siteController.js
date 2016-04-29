@@ -116,6 +116,8 @@ exports.postSiteStack = function(req, res) {
     // @todo: mariadb...
   
     console.log('Stack', req.body.stack);
+    site.stack = req.body.stack;
+    console.log(site);
     site.save();
 
     return res.status(200).json(site);
