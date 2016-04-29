@@ -69,12 +69,8 @@ router.route('/sites/:siteId/accounts')
 
 router.route('/sites/:siteId/stack')
   .get(helpers.jwtCheck, siteController.getSiteStack)
+  .post(helpers.jwtCheck, siteController.postSiteStack);
   //.post(helpers.jwtCheck, siteController.postSiteCollect)
-  //.put(helpers.jwtCheck, siteController.putSite)
-  //.delete(helpers.jwtCheck, siteController.deleteSite);
-
-router.route('/sites/:siteId/stack/phpinfo')
-  .post(helpers.jwtCheck, siteController.postSiteStackPhpinfo)
   //.put(helpers.jwtCheck, siteController.putSite)
   //.delete(helpers.jwtCheck, siteController.deleteSite);
 

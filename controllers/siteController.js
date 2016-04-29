@@ -102,32 +102,20 @@ exports.getSitePlugins = function(req, res) {
 
 
 /** 
- * Endpoint /sites/:siteId/collect for POST
+ * Endpoint /sites/:siteId/stack for POST
  */
-exports.postSiteStackPhpinfo = function(req, res) {
+exports.postSiteStack = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
 
-
-    var phpinfo = req.body.phpinfo;
-
-    site.stack = {
-      'os': phpinfo['uname'],
-      'server': phpinfo['PHP Variables']['_SERVER["SERVER_SOFTWARE"]'],
-      'database': null,
-      'application': phpinfo['application'],
-      'language': phpinfo['php'],
-      //'info': phpinfo,      
-    }
-
-
-    if ( phpinfo.mysql != undefined ) {
-      site.stack.database = 'Mysql ' + phpinfo.mysql['Client API version'];
-    }
+    // @todo
+    //if ( phpinfo.mysql != undefined ) {
+    //  site.stack.database = 'Mysql ' + phpinfo.mysql['Client API version'];
+    //}
     // @todo: mariadb...
   
-    console.log('Stack', site.stack);
+    console.log('Stack', req.body.stack);
     site.save();
 
     return res.status(200).json(site);
