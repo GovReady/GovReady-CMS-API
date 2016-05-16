@@ -10,14 +10,15 @@ var nodemailer = require('nodemailer');
 var ses = require('nodemailer-ses-transport');
 var htmlToText = require('html-to-text');
 var jwt = require('express-jwt');
+var RedisSMQ = require("rsmq");
 
+var rsmq = new RedisSMQ( {host: process.env.RABBITMQ_SERVER, port: process.env.RABBITMQ_PORT, ns: "rsmq"} );
 
 // Check jwt tokens in `res`
 exports.jwtCheck = jwt({
   secret: new Buffer(process.env.AUTH0_CLIENT_SECRET, 'base64'),
   audience: process.env.AUTH0_CLIENT_ID
 });
-
 
 // Get url for proxied helpers site
 exports.helpersProxyUrl = function(req, site, endpoint, payload) {console.log(site.url);
