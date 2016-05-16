@@ -1,5 +1,6 @@
 - title: Wordfence
   namespace: wordfence
+  type: scan
   free: true
   paid: $4.92/mo
   description: |
@@ -8,6 +9,7 @@
     secure and alerts you in the event your site is compromised.
 - title: WP Security Audit Log
   namespace: wp-security-audit-log
+  type: scan
   free: true
   paid: Addons start at $59/yr
   description: |
@@ -16,6 +18,7 @@
     user logins.
 - title: VaultPress
   namespace: vaultpress
+  type: backup
   free: false
   paid: From $99/yr or $9/mo
   description: |
@@ -23,6 +26,7 @@
     company behind WordPress.com.
 - title: WP-DB-Backup
   namespace: wp-db-backup
+  type: backup
   free: true
   paid: false
   description: |
