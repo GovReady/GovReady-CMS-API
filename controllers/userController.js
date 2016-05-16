@@ -108,7 +108,7 @@ var createSite = function(req, cb) {
   // Create monogo Site            
   var site = new Site({
     'url': req.body.url,
-    status: 0
+    status: {}
   });
   site.save();
   console.log(site);
