@@ -49,7 +49,59 @@ var monitors = {
 
 
 /** 
- * Callback to manually trigger monitor
+ * Create a new RabbitMQ task
+ */
+exports.createTask = function(data, delay) {
+  delay = delay = undefined ? 0 : delay;
+  data = JSON.stringify(data);
+  rsmq.sendMessage({qname: process.env.RABBITMQ_QUEUE, message: data, delay: delay}, function (err, resp) {
+    if (resp) {
+      console.log("RSMQ: Message sent. ID:", resp);
+    }
+  });
+}
+
+
+/** 
+ * Create all tasks for a site
+ */
+exports.createSiteTasks = function(site) {
+  monitors.forEach(function(meta, key) {
+    createTask( {
+      siteId: site._id,
+      callback: key
+    }, monitors[key].frequency / 8640 );
+  }); // foreach
+}
+
+
+/** 
+ * Runs a task from the message queue.
+ * Called from ./monitor.js.
+ */
+exports.processTask = function(data) {
+  Site.findOne( { _id: data.siteId } )
+  .then(function (site) {
+
+    exports[data.callback](site, function(err, success) {
+      if (err) {
+        // @todo
+        console.log('MONITOR: failed task');
+      }
+
+      // Mark task last run time
+      site.status[data.callback] = new Date();
+
+      // Re-queue the same task
+      helpers.newTask( data, monitors[data.callback] );
+    });
+    
+  });
+}
+
+
+/** 
+ * Page callback to manually trigger monitor
  */
 exports.getMonitor = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
@@ -124,7 +176,7 @@ exports.ping = function(site, cb) {
     console.log(res);
     console.log(error);
     if (!error && res.statusCode === 200) {
-      site.status = {
+      site.status.ping = {
         datetime: new Date().toISOString(),
         status: true
       }
@@ -136,7 +188,7 @@ exports.ping = function(site, cb) {
     // Loading error
     else {
       var msg = error ? 'error' : 'unknown';
-      site.status = {
+      site.status.ping = {
         datetime: new Date().toISOString(),
         status: false,
         message: msg
