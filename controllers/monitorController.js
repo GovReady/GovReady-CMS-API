@@ -188,6 +188,9 @@ exports.ping = function(site, cb) {
     // Loading error
     else {
       var msg = error ? 'error' : 'unknown';
+      if (typeof site.status !== 'object') {
+        site.status = {};
+      }
       site.status.ping = {
         datetime: new Date().toISOString(),
         status: false,
