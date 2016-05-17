@@ -109,9 +109,9 @@ exports.getMonitor = function(req, res) {
 
     exports[req.params.callback](site, function(err, success) {
       if (err) {
-        return res.status(500).json( 'err: '+err );
+        return res.status(500).json( {'err': err} );
       }
-      return res.status(200).json( 'success: '+success );
+      return res.status(200).json( {'success': success} );
     });
     
   });
