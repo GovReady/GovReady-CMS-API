@@ -67,26 +67,10 @@ exports.helpersRewriteMult = function(entities) {
   return entities;
 }
 
-/*http.ServerResponse.prototype.helpersEnvelope = function(obj, status){
-  status = status != undefined ? status : 200;
-  if (this.req.query.http_envelope == undefined) {
-    return this.status(status).json(obj);
-  }
-  else {
-    var out = {
-      body: obj,
-      code: status,
-      headers: [{name: "Content-Type", value: "application/json"}]
-    }
-    var body = JSON.stringify(out);
-    // content-type
-    this.get('Content-Type') || this.set('Content-Type', 'application/json');
-
-    return this.send(body);
-  }
-};*/
-
-
+// Get the application key from a Site
+exports.siteApplication = function(site) {
+  return site.stack.application.platform.toLowerCase();
+}
 
 // Find a site by id (or url)
 exports.findSite = function(req, callback) {

@@ -182,9 +182,8 @@ exports.getSiteRecommended = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
-
     try {
-      var doc = yaml.safeLoad(fs.readFileSync(__dirname + '/../data/wordpress-recommend.yml', 'utf8'));
+      var doc = yaml.safeLoad(fs.readFileSync(__dirname + '/../data/' + helpers.siteApplication(site) + '-recommend.yml', 'utf8'));
       console.log(doc);
       return res.status(200).json(doc);
     } catch (e) {
