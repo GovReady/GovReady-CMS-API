@@ -122,8 +122,16 @@ exports.getMonitor = function(req, res) {
  * Generic callback to trigger data collection from application (WP, Drupal, etc)
  */
 exports.trigger = function(site, key, endpoint, cb) {
+  switch ( helpers.siteApplication(site) ) {
+    case 'wordpress':
+      var url = site.url + '/wp-admin/admin-ajax.php?action=govready_v1_trigger';
+      break;
+    case 'drupal':
+      var url = site.url + '/govready/trigger';
+      break;
+  }
   var data = {
-    url: site.url + '/wp-admin/admin-ajax.php?action=govready_v1_trigger',
+    url: url,
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
     },
