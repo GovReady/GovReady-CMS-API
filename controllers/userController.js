@@ -44,7 +44,6 @@ router.route('/users/:userId')
  * Endpoint /initialize for POST
  */
 exports.postInitialize = function(req, res) {
-console.log(req.body.url);
   // Does a site entry already exist?
   Site.findOne( { url: req.body.url } ).then(function (site) {
     
@@ -67,8 +66,6 @@ console.log(req.body.url);
       management
         .clients.get( { client_id: process.env.AUTH0_CLIENT_ID } )
         .then(function (client) {
-          console.log(client);
-
           // Update the Auth0 Client
           client.allowed_origins.push( req.body.url );
           var data = {
@@ -84,11 +81,17 @@ console.log(req.body.url);
 
             })
             .catch(function (err) {
-              return res.status(500).json(err);
+              
+              // Likely the allowed_origins entry already exists, so we fail gracefully
+              createSite(req, function(site){
+                return res.status(200).json(site);
+              });
+
             }); // auth0.clients.update()
 
         })
         .catch(function (err) {
+          console.log(clients);
           return res.status(500).json(err);
         }); // auth0.clients.get()
     }
