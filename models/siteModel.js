@@ -16,7 +16,8 @@ var SiteSchema   = new mongoose.Schema({
   accounts: Object,
   stack: Object,
   domain: Object,
-  status: Object
+  status: Object,
+  mode: String
 });
 
 // Export the Mongoose model

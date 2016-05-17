@@ -212,6 +212,21 @@ exports.getSiteSecurity = function(req, res) {
 } // function
 
 
+/** 
+ * Endpoint /sites/:siteId/changeMode for POST
+ */
+exports.postSiteChangeMode = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+    site.mode = req.body.mode;
+    console.log('Mode', site.mode);
+    site.save();
+    return res.status(200).json(site.mode);  
+  });
+
+} // function
+
 
 
 

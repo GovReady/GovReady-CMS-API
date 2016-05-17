@@ -83,6 +83,9 @@ router.route('/sites/:siteId/status')
 router.route('/sites/:siteId/recommended')
   .get(helpers.jwtCheck, siteController.getSiteRecommended)
 
+router.route('/sites/:siteId/changeMode')
+  .post(helpers.jwtCheck, siteController.postSiteChangeMode)
+
 router.route('/sites/:siteId/contacts')
   .get(helpers.jwtCheck, contactController.getSiteContacts)
   .post(helpers.jwtCheck, contactController.postSiteContact)
