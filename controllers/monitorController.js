@@ -175,6 +175,11 @@ exports.ping = function(site, cb) {
     // Website is up
     console.log(res);
     console.log(error);
+
+    if (typeof site.status !== 'object') {
+      site.status = {};
+    }
+
     if (!error && res.statusCode === 200) {
       site.status.ping = {
         datetime: new Date().toISOString(),
@@ -188,9 +193,6 @@ exports.ping = function(site, cb) {
     // Loading error
     else {
       var msg = error ? 'error' : 'unknown';
-      if (typeof site.status !== 'object') {
-        site.status = {};
-      }
       site.status.ping = {
         datetime: new Date().toISOString(),
         status: false,
