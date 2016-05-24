@@ -16,7 +16,7 @@ var helpers = require('../controllers/helpersController');
 
 
 /** 
- * Endpoint /sites/:siteId/measure for POST
+ * Endpoint /sites/:siteId/measures for POST
  */
 exports.postSiteMeasure = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
@@ -39,7 +39,7 @@ exports.postSiteMeasure = function(req, res) {
 
 
 /** 
- * Endpoint /sites/:siteId/measure for POST
+ * Endpoint /sites/:siteId/measures for GET
  */
 exports.getSiteMeasures = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
@@ -51,4 +51,57 @@ exports.getSiteMeasures = function(req, res) {
     });
 
   });
+} // function
+
+
+/** 
+ * Endpoint /sites/:siteId/measures/:measureId/submissions for POST
+ */
+exports.postSiteMeasuresSubmission = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+
+    Measure.findOne( { _id: req.params.measureId } )
+    .then(function (measure) {
+
+      // Create monogo Submission            
+      var submission = new Submission({
+        measureId: req.params.measureId,
+        name: req.body.name,
+        body: req.body.body,
+        //data: {},
+        datetime: new Date()
+      });
+      submission.save();
+
+      return res.status(200).json(submission);  
+    });
+
+  });
+
+} // function
+
+
+/** 
+ * Endpoint /sites/:siteId/measures/:measureId/submissions for GET
+ */
+exports.getSiteMeasuresSubmissions = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+
+    Measure.findOne( { _id: req.params.measureId } )
+    .then(function (measure) {
+
+      Submission.find( { measureId: req.params.measureId } )
+      .then(function (submissions) {
+        return res.status(200).json(submissions);  
+      });
+
+      return res.status(200).json(submission);  
+    });
+
+  });
+
 } // function

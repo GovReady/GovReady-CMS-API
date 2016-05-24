@@ -104,6 +104,10 @@ router.route('/sites/:siteId/measures')
   .get(helpers.jwtCheck, measureController.getSiteMeasures)
   .post(helpers.jwtCheck, measureController.postSiteMeasure)
 
+router.route('/sites/:siteId/measures/:measureId/submissions')
+  .get(helpers.jwtCheck, measureController.getSiteMeasuresSubmissions)
+  .post(helpers.jwtCheck, measureController.postSiteMeasuresSubmission)
+
 
 // Plugins
 router.route('/plugins')
