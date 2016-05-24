@@ -7,6 +7,7 @@ var govreadyController = require('../controllers/govreadyController');
 var userController = require('../controllers/userController');
 var siteController = require('../controllers/siteController');
 var pluginController = require('../controllers/pluginController');
+var measureController = require('../controllers/measureController');
 var contactController = require('../controllers/contactController');
 var applicationController = require('../controllers/applicationController');
 var monitorController = require('../controllers/monitorController');
@@ -86,6 +87,8 @@ router.route('/sites/:siteId/recommended')
 router.route('/sites/:siteId/changeMode')
   .post(helpers.jwtCheck, siteController.postSiteChangeMode)
 
+
+// Contacts
 router.route('/sites/:siteId/contacts')
   .get(helpers.jwtCheck, contactController.getSiteContacts)
   .post(helpers.jwtCheck, contactController.postSiteContact)
@@ -94,6 +97,12 @@ router.route('/sites/:siteId/contacts/:contactId')
   .get(helpers.jwtCheck, contactController.getSiteContact)
   .patch(helpers.jwtCheck, contactController.patchSiteContact)
   .delete(helpers.jwtCheck, contactController.deleteSiteContact)
+
+
+// Measures
+router.route('/sites/:siteId/measures')
+  .get(helpers.jwtCheck, measureController.getSiteMeasures)
+  .post(helpers.jwtCheck, measureController.postSiteMeasure)
 
 
 // Plugins
