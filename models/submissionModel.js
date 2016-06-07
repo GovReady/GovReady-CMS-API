@@ -5,6 +5,7 @@ var mongoose = require('mongoose'),
 
 // Define our beer schema
 var SubmissionSchema = new mongoose.Schema({
+  siteId: ObjectId,
   measureId: ObjectId,
   userId: ObjectId,
   name: String,

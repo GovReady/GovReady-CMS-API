@@ -8,7 +8,8 @@ var MeasureSchema = new mongoose.Schema({
   title: String,
   process: String,
   frequency: Number,
-  datetime: Date,
+  datetime: Date, // lastValidated
+  due: Date,
 });
 
 // Export the Mongoose model
