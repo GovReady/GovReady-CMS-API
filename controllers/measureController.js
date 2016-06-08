@@ -22,7 +22,7 @@ exports.getSiteMeasures = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     
-    Measure.find( { siteId: req.params.measureId } )
+    Measure.find( { siteId: req.params.siteId } )
     .then(function (measures) {
 
       /*functions = [];
@@ -64,8 +64,9 @@ exports.postSiteMeasure = function(req, res) {
       title: req.body.title,
       body: req.body.body,
       frequency: req.body.frequency,
-      datetime: new Date()
+      datetime: req.body.datetime
     });
+    measure = setMeasureDue(measure);
     measure.save();
 
     return res.status(200).json(measure);  
@@ -73,6 +74,15 @@ exports.postSiteMeasure = function(req, res) {
   //return res.status(500).json({ err: 'No site found' });  
 
 } // function
+
+
+/** 
+ * Set the measure due date by adding measure.frequency to measure.datetime.
+ */
+var setMeasureDue = function(measure) {
+  measure.due = measure.datetime;
+  measure.due = measure.due.setSeconds(measure.due.getSeconds() + measure.frequency);
+}
 
 
 /** 
@@ -181,6 +191,10 @@ exports.postSiteMeasuresSubmission = function(req, res) {
         datetime: new Date()
       });
       submission.save();
+
+      // Set the measure due date
+      measure = setMeasureDue(measure);
+      measure.save();
 
       return res.status(200).json(submission);  
     });
