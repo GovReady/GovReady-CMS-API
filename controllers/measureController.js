@@ -183,6 +183,7 @@ exports.postSiteMeasuresSubmission = function(req, res) {
       submission.save();
 
       // Set the measure due date
+      measure.datetime = new Date();
       measure.due = measure.datetime;
       measure.due = measure.due.setSeconds(measure.due.getSeconds() + measure.frequency);
       measure.save();
