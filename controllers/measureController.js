@@ -64,7 +64,7 @@ exports.postSiteMeasure = function(req, res) {
       title: req.body.title,
       body: req.body.body,
       frequency: req.body.frequency,
-      due: req.body.due ? req.body.due : req.body.datetime  // @todo: change this to due?
+      due: req.body.due  // @todo: change this to due?
     });
     measure.save();
 
