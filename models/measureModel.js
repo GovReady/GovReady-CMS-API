@@ -9,6 +9,7 @@ var MeasureSchema = new mongoose.Schema({
   process: String,
   frequency: Number,
   datetime: Date, // lastValidated
+  body: String,
   due: Date,
 });
 
