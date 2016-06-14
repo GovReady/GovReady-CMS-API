@@ -16,7 +16,7 @@ var helpers = require('../controllers/helpersController');
 // ssls: look into https://www.npmjs.com/package/ssl-utils#checkcertificateexpirationcert-callback
 // domain whois: https://www.npmjs.com/package/node-whois https://www.npmjs.com/package/whois-ux
 
-/* ping toolz
+/* ping tools
 https://github.com/alfredwesterveld/freakinping
 http://blog.ragingflame.co.za/2013/2/14/roll-out-your-own-uptime-monitor-with-nodejs
 https://github.com/fzaninotto/uptime/blob/master/lib/monitor.js
