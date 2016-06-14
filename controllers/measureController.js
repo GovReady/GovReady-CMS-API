@@ -82,7 +82,7 @@ exports.postSiteMeasuresLoad = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
 
-    console.log('/../data/measures-' + req.params.measureStack + '.yml');
+    //console.log('/../data/measures-' + req.params.measureStack + '.yml');
 
     try {
       var doc = yaml.safeLoad(fs.readFileSync(__dirname + '/../data/measures-' + req.params.measureStack + '.yml', 'utf8'));
