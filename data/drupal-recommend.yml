@@ -11,17 +11,6 @@
     report includes: Best Practices - structural recommendations; Security - check 
     for common security exploits, such as malicious menu router items; Watchdog - 
     404 error count, age, number of entries, enabled, PHP errors.
-- title: Backup and Migrate with NodeSquirrel
-  namespace: backup_migrate
-  type: backup
-  free: true
-  paid: From $9/mo
-  integration: false
-  description: |
-    Back up and restore your Drupal MySQL database, code, and files or migrate a site between 
-    environments. Backup and Migrate supports gzip, bzip and zip compression as well as 
-    automatic scheduled backups. Backup to FTP/S3/Email or 
-    [NodeSquirrel.com](https://NodeSquirrel.com).
 - title: Security Review
   namespace: security_review
   type: scan
@@ -34,14 +23,3 @@
     against arbitrary code execution); Large amount of database errors (could be sign of 
     SQLi attempts); Responsible Drupal admin permissions (protecting against access 
     misconfiguration); Large amount of failed logins (could be sign of brute-force attempts).
-- title: Hacked!
-  namespace: hacked
-  type: scan
-  free: true
-  paid: false
-  description: |
-    This module scans the currently installed Drupal, contributed modules and themes, 
-    re-downloads them and determines if they have been changed. Changes are marked clearly 
-    and if the diff module is installed then Hacked! will allow you to see the exact lines 
-    that have changed. NOTE: This module does not and will not prevent your site from 
-    being "hacked".
