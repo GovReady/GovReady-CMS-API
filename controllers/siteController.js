@@ -184,7 +184,6 @@ exports.getSiteRecommended = function(req, res) {
   .then(function (site) {
     try {
       var doc = yaml.safeLoad(fs.readFileSync(__dirname + '/../data/' + helpers.siteApplication(site) + '-recommend.yml', 'utf8'));
-      console.log(doc);
       return res.status(200).json(doc);
     } catch (e) {
       return res.status(500).json();

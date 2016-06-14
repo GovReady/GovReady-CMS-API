@@ -104,6 +104,9 @@ router.route('/sites/:siteId/measures')
   .get(helpers.jwtCheck, measureController.getSiteMeasures)
   .post(helpers.jwtCheck, measureController.postSiteMeasure)
 
+router.route('/sites/:siteId/measures/load/:measureStack')
+  .post(helpers.jwtCheck, measureController.postSiteMeasuresLoad)
+
 router.route('/sites/:siteId/measures/:measureId')
   .get(helpers.jwtCheck, measureController.getSiteMeasure)
   .patch(helpers.jwtCheck, measureController.patchSiteMeasure)
