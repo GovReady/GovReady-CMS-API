@@ -44,7 +44,6 @@ exports.postSiteAccounts = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     site.accounts = req.body.accounts;
-    console.log('Accounts', site.accounts);
     site.save();
     return res.status(200).json(site);  
   });
@@ -56,13 +55,22 @@ exports.postSiteAccounts = function(req, res) {
  * Endpoint /sites/:siteId/accounts for GET
  */
 exports.getSiteAccounts = function(req, res) {
-
+  
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
+
     if (!site.accounts) {
-      return res.status(500).json();  
+      return res.status(500).json({err: 'Could not find any accounts'});  
     }
-    return res.status(200).json(site.accounts);
+
+    var timestamp = Math.floor(Date.now() / 1000) - 2592000; // 30 days ago
+    var accounts = [];
+    site.accounts.forEach(function(item, i) {
+      if (item.lastLogin == '' || item.lastLogin < timestamp) {
+        accounts.push(item);
+      }
+    }); // forEach
+    return res.status(200).json(accounts);
   });
 
 } // function
