@@ -1,0 +1,56 @@
+- title: Verify site monitoring
+  # 30 days
+  frequency: 1728000
+  body: |
+    * Monitor has successfully pinged the site in the last 5 minutes (yes / no): 
+    * Notification contacts and settings are up-to-date and working properly (yes / no): 
+    * SSL and domain monitoring is configured and working (yes / no): 
+- title: Verify offsite database backups
+  # 30 days
+  frequency: 1728000
+  body: |
+    * Daily offsite backups are working correctly and updated last night (yes / no): 
+    * Weekly offsite backups are working correctly (yes / no): 
+- title: Server security updates
+  # 30 days
+  frequency: 1728000
+  body: |
+    * Test on staging server successful (yes / no): 
+    * Pushed to production (yes / no): 
+- title: Incident response practice
+  # 30 days
+  frequency: 1728000
+  body: |
+    * Site down dry run (yes / no): 
+    * Roles and responsibilities in an outage are clear and communicated (yes / no): 
+    * Vacation protocol it up-to-date and communicated (yes / no): 
+- title: Emergency restore dry run
+  # 120 days
+  frequency: 10368000
+  body: |
+    * Able to spin-up backup server (yes / no): 
+    * Offsite code backup is up-to-date (yes / no): 
+    * Offsite database backup is restorable (yes / no): 
+    * Offsite uploaded files backup is up-to-date (yes / no): 
+    * Full site restore was successful (yes / no): 
+- title: Check webserver disk space
+  # 120 days
+  frequency: 10368000
+  body: |
+    * Server disk has at least 20% free space (yes / no): 
+- title: Review server logs
+  # 120 days
+  frequency: 10368000
+  body: |
+    * PHP error log is correctly logging (yes / no): 
+    * No serious errors (yes / no): 
+    * No recurring warnings or notices (yes / no): 
+    * PHP access log is correctly logging (yes / no): 
+    * MySQL access log is correctly logging (yes / no): 
+    * Syslog does not report any major errors (yes / no): 
+- title: Cyber security awareness training
+  # 120 days
+  frequency: 10368000
+  body: |
+    * Team review of latest vulnerabilities (yes / no): 
+    * Required compliance certification is up-to-date (yes / no): 
