@@ -10,6 +10,7 @@ var merge = require('lodash/merge');
 var yaml = require('js-yaml');
 var fs = require('fs');
 var async = require('async');
+var parseString = require('xml2js').parseString;
 
 var helpers = require('../controllers/helpersController');
 var site = require('../controllers/siteController');
@@ -35,27 +36,63 @@ exports.getSiteVulnerabilities = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
 
+    if (!site.stack || !site.stack.application) {
+      return res.status(500).json( {err: 'site.stack does not yet exist'} );
+    }
+
     var functions = [];
-    site.plugins.unshift({
-      type: 'wordpresses',
-      namespace: site.stack ? site.stack.application.version.replace('.', '') : null,
-      version: site.stack ? site.stack.application.version : null
-    });
-    //console.log('PLUGINS TO LOOKUP', site.plugins);
     var dateCutoff = new Date();
+
+    var platform = site.stack.application.platform.toLowerCase();
+
+    switch ( platform ) {
+      case 'wordpress':
+        site.plugins.unshift({
+          type: 'wordpresses',
+          namespace: site.stack.application.version.replace('.', ''),
+          version: site.stack.application.version
+        });
+        break;
+      case 'drupal':
+        var version = site.stack.application.version;
+        var arrVersion = version.split('.');
+        var majorVersion = arrVersion[0] + '.x';
+        site.plugins.unshift({
+          type: majorVersion,
+          namespace: platform,
+          version: version
+        });
+        break;
+    }
+
+    //site.plugins = [site.plugins[0]];
+
+    //console.log('PLUGINS TO LOOKUP', site.plugins);
+
     dateCutoff.setDate(dateCutoff.getDate() - 7);
     site.plugins.forEach(function(item, i) {
 
       functions.push(function( cb ) {
-        Plugin.findOne( { name: item.namespace } )
+        Plugin.findOne( { name: item.namespace, platform: platform } )
         .then(function (plugin) {
           //console.log('PLUGIN FOUND', plugin);
 
+          // We don't have a plugin, or we haven't fetched data for a while: ping updates site
           if (plugin === null || dateCutoff > plugin.fetched) {
-            getWordPressPluginVulnerabilities(item.type ? item.type : 'plugins', item.namespace, function(err, data) {
-              cb(err, data);
-            });
+            switch ( platform ) {
+              case 'wordpress':
+                getWordPressPluginVulnerabilities(item.type ? item.type : 'plugins', item.namespace, function(err, data) {
+                  cb(err, data);
+                });
+                break;
+              case 'drupal':
+                getDrupalModuleVulnerabilities(item.type ? item.type : majorVersion, item.namespace, function(err, data) {
+                  cb(err, data);
+                });
+                break;
+            }
           }
+          // Return the plugin from the db
           else {
             cb(null, plugin);
           }
@@ -65,7 +102,7 @@ exports.getSiteVulnerabilities = function(req, res) {
 
     }); // forEach
 
-    async.parallel(functions, function(err, results){
+    async.series(functions, function(err, results){
       var out = [];
       
       //console.log('PLUGIN RESULTS', results);
@@ -105,6 +142,7 @@ exports.getSiteVulnerabilities = function(req, res) {
 
 
 // Pings wpvulndb.com to get information about WordPress plugin vulnerabilities
+// Type is "plugin" or "theme" in WordPress, major version in Drupal
 var getWordPressPluginVulnerabilities = function(type, name, cb) {
   // Known plugins without a release
   if (name.indexOf('hello.php') !== -1 || name.indexOf('GovReady') !== -1) {
@@ -120,6 +158,7 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
       // Clean up the output, check if this is a WordPress Core call
       var key = Object.keys(body)[0];
       data = body[key];
+      data.platform = 'wordpress';
       data.name = name;
       data.fetched = Date.now();
       if (key != name) {
@@ -134,6 +173,7 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
     else if (!err) {
       plugin = new Plugin( {
         name: name,
+        platform: 'wordpress',
         fetched: Date.now()
       });
       plugin.save();
@@ -145,6 +185,80 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
 }
 
 
+// Pings wpvulndb.com to get information about Drupal module vulnerabilities
+var getDrupalModuleVulnerabilities = function(type, name, cb) {
+
+  var url = 'https://updates.drupal.org/release-history/' + name +'/'+ type;
+  console.log(url);
+  
+  request(url, function (err, res, body) {
+    //console.log('CALLING WPVULNDB ('+ res.statusCode +'): ' + url);
+    if (!err && res.statusCode == 200 && body.indexOf('<error>') == -1) {
+
+      parseString(body, function (err, body) {
+        var data = {
+          platform:'drupal',
+          name: name,
+          fetched: Date.now(),
+          vulnerabilities: [],
+          latest_version: body.project.releases[0].release[0].version[0]
+        }
+        // @todo
+        /*if (key != name) {
+          data.version = key;
+          data.application = 'drupal';
+          data.type = 'application';
+        }*/
+        for (var i in body.project.releases[0].release) {
+          var release = body.project.releases[0].release[i];
+          if (release.terms && release.terms[0].term[0].value[0] == 'Security update') {
+            data.vulnerabilities.push({
+              "title": release.name[0],
+              "created_at": new Date( parseInt(release.date[0])*1000 ).toISOString(),
+              "references": {
+                "url": [
+                  release.release_link[0]
+                ],
+              },
+              "fixed_in": release.version[0]
+            });
+          }
+        }
+        
+        //console.dir(body.project.releases[0].release[0].terms[0].term);
+        var key = Object.keys(body)[0];
+        data = body[key];
+        data.platform = 'drupal';
+        data.name = name;
+        data.fetched = Date.now();
+        
+        plugin = new Plugin(data);
+        plugin.save();
+        console.log(data);
+        return cb(err, data);
+      });
+
+      // Clean up the output, check if this is a WordPress Core call
+      
+      //console.log('SAVING PLUGIN: '+plugin);
+    }
+    else if (!err) {
+      plugin = new Plugin( {
+        name: name,
+        platform: 'drupal',
+        fetched: Date.now()
+      });
+      plugin.save();
+      err = body;
+      data = null;
+      return cb(null, plugin);
+    }
+    else {
+      return cb(err, null);
+    }
+
+  });
+}
 
 /*
 router.route('/sites/:siteId')

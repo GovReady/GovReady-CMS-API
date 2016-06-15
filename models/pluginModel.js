@@ -3,9 +3,11 @@ var mongoose = require('mongoose');
 
 // Define our beer schema
 var PluginSchema = new mongoose.Schema({
+  platform: String,
   name: String,
   fetched: Date,
   application: String,
+  latest_version: String,
   version: String,
   type: String,
   release_date: String,
