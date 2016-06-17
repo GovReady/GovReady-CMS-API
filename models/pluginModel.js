@@ -1,5 +1,6 @@
 // Load required packages
 var mongoose = require('mongoose');
+var encrypt = require('mongoose-encryption');
 
 // Define our beer schema
 var PluginSchema = new mongoose.Schema({
@@ -18,6 +19,11 @@ var PluginSchema = new mongoose.Schema({
   lastConfirmed: String,
   sub: String
 });
+
+console.log(process.env.DB_ENC_KEY);
+console.log(process.env.DB_SIG_KEY);
+
+PluginSchema.plugin(encrypt, { encryptionKey: process.env.DB_ENC_KEY, signingKey: process.env.DB_SIG_KEY });
 
 // Export the Mongoose model
 module.exports = mongoose.model('Plugin', PluginSchema);

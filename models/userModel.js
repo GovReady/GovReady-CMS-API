@@ -1,5 +1,6 @@
 // Load required packages
 var mongoose = require('mongoose');
+var encrypt = require('mongoose-encryption');
 
 // Define our user schema
 var UserSchema = new mongoose.Schema({
@@ -24,6 +25,8 @@ var UserSchema = new mongoose.Schema({
   URL: String,
   sub: String
 });
+
+UserSchema.plugin(encrypt, { encryptionKey: process.env.DB_ENC_KEY, signingKey: process.env.DB_SIG_KEY });
 
 
 // Export the Mongoose model
