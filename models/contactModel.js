@@ -15,7 +15,7 @@ var ContactSchema = new mongoose.Schema({
   sub: String
 });
 
-ContactSchema.plugin(encrypt, { encryptionKey: process.env.DB_ENC_KEY, signingKey: process.env.DB_SIG_KEY });
+ContactSchema.plugin(encrypt, { encryptionKey: process.env.DB_ENC_KEY, signingKey: process.env.DB_SIG_KEY, excludeFromEncryption: ['siteId'] });
 
 // Export the Mongoose model
 module.exports = mongoose.model('Contact', ContactSchema);

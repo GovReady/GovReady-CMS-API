@@ -18,7 +18,7 @@ var SubmissionSchema = new mongoose.Schema({
   data: Object
 });
 
-SubmissionSchema.plugin(encrypt, { encryptionKey: process.env.DB_ENC_KEY, signingKey: process.env.DB_SIG_KEY });
+SubmissionSchema.plugin(encrypt, { encryptionKey: process.env.DB_ENC_KEY, signingKey: process.env.DB_SIG_KEY, excludeFromEncryption: ['siteId'] });
 
 // Export the Mongoose model
 module.exports = mongoose.model('Submission', SubmissionSchema);
