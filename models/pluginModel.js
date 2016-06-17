@@ -20,9 +20,6 @@ var PluginSchema = new mongoose.Schema({
   sub: String
 });
 
-console.log(process.env.DB_ENC_KEY);
-console.log(process.env.DB_SIG_KEY);
-
 PluginSchema.plugin(encrypt, { encryptionKey: process.env.DB_ENC_KEY, signingKey: process.env.DB_SIG_KEY });
 
 // Export the Mongoose model
