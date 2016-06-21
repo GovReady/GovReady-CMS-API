@@ -174,10 +174,29 @@ exports.getSiteSubmissions = function(req, res) {
     .sort([['datetime', 'descending']])
     .limit(20)
     .then(function (submissions) {
-      return res.status(200).json(submissions);  
-    });
+      var ids = [];
+      submissions.forEach(function(item, i) {
+        ids.push(item.measureId);
+      });
 
-  });
+      Measure.find( { _id: { $in: ids } } )
+      .then(function (measures) {
+
+        submissions.forEach(function(s, i) {
+          measures.forEach(function(m, j) {
+            if ( m._id.equals(s.measureId) ) {
+              submissions[i] = submissions[i].toObject();
+              submissions[i].title = m.title;
+            }
+          });
+        });
+        return res.status(200).json(submissions);  
+        
+      }); // Measure.find();
+
+    }); // Submission.find();
+
+  }); //Site.findOne();
 
 } // function
 
