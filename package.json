@@ -44,6 +44,7 @@
     "serve-favicon": "~2.3.0",
     "ssl-utils": "^0.3.0",
     "swagger-tools": "^0.10.1",
+    "tldjs": "^1.6.2",
     "underscore": "^1.8.3",
     "whois": "^2.1.5",
     "xml2js": "^0.4.16"

@@ -8,6 +8,7 @@ var merge = require('lodash/merge');
 var url = require('url');
 var whois = require('whois');
 var https = require('https');
+var tld = require('tldjs');
 
 var helpers = require('../controllers/helpersController');
 
@@ -145,6 +146,7 @@ exports.trigger = function(site, key, endpoint, cb) {
   console.log('CALLING SITE TRIGGER: ', data);
   request(data, function (error, res, body) {
     if (!error && res.statusCode === 200) {
+      console.log(body);
       cb(null, body);
     }
     else {
@@ -181,8 +183,8 @@ exports.stack = function(site, cb) {
 exports.ping = function(site, cb) {
   request(site.url, function (error, res, body) {
     // Website is up
-    console.log(res);
-    console.log(error);
+    //console.log(res);
+    //console.log(error);
 
     if (typeof site.status !== 'object') {
       site.status = {};
@@ -219,7 +221,15 @@ exports.ping = function(site, cb) {
  */
  exports.domain = function(site, cb) {
 
-  var parsed = url.parse('https://proudcity.com'); //@todo
+  var parsed = url.parse(site.url);
+  var domain = tld.getDomain(site.url);
+  site.domain = {
+    domain: domain,
+    hostname: parsed.hostname,
+    ssl: {  }
+  };
+
+  /*console.log(parsed);
   site.domain = null; //@todo tmp
 
   if (!site.domain || !site.domain.domain) {
@@ -227,10 +237,10 @@ exports.ping = function(site, cb) {
       domain: parsed.hostname,
       ssl: {}
     };
-  }
+  }*/
 
   // Get domain information
-  whois.lookup(parsed.hostname, function(err, data) {
+  whois.lookup(domain, function(err, data) {
     var match = data.match( /Registrar Registration Expiration Date\:(.*)/ );
     var expires = match[1].trim();
     site.domain.expires = expires;
@@ -256,11 +266,12 @@ exports.ping = function(site, cb) {
     });
     
     req.on('error', function(err) {
-      site.domain.ssl.allowed = false;
+      site.domain.ssl = { allowed: false };
       site.save();
     });
 
     req.end();
+  console.log(site.domain);
 
     // Callback
     cb(null, true);
