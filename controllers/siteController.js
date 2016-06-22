@@ -63,20 +63,20 @@ exports.getSiteAccounts = function(req, res) {
       return res.status(500).json({err: 'Could not find any accounts'});  
     }
 
-    var timestamp = Math.floor(Date.now() / 1000) - 2592000; // 30 days ago
-    var accounts = [];
-    site.accounts.forEach(function(item, i) {
-      if (item.lastLogin == '' || item.lastLogin < timestamp) {
-        accounts.push(item);
-      }
-    }); // forEach
-    return res.status(200).json(accounts);
+    //var timestamp = Math.floor(Date.now() / 1000) - 2592000; // 30 days ago
+    //var accounts = [];
+    //site.accounts.forEach(function(item, i) {
+    //  if (item.lastLogin == '' || item.lastLogin < timestamp) {
+    //    accounts.push(item);
+    //  }
+    //}); // forEach
+    return res.status(200).json(site.accounts);
   });
 
 } // function
 
 
-/** 
+/**
  * Endpoint /sites/:siteId/plugins for POST
  */
 exports.postSitePlugins = function(req, res) {
