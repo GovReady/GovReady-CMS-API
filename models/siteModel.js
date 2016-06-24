@@ -17,6 +17,7 @@ var SiteSchema   = new mongoose.Schema({
   accounts: Object,
   stack: Object,
   domain: Object,
+  wappalyzer: Object,
   status: Object,
   mode: String
 });

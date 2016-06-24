@@ -9,6 +9,8 @@ var url = require('url');
 var whois = require('whois');
 var https = require('https');
 var tld = require('tldjs');
+var wappalyzer = require('wappalyzer');
+var async = require('async');
 
 var helpers = require('../controllers/helpersController');
 
@@ -219,7 +221,81 @@ exports.ping = function(site, cb) {
 /** 
  * Check domain name expiration, ssl status
  */
- exports.domain = function(site, cb) {
+exports.domain = function(site, cb) {
+
+  async.parallel([
+    function(cb) {
+      exports.whois(site, cb);
+    },
+    function(cb) {
+      exports.ssl(site, cb);
+    },
+    function(cb) {
+      exports.wappalyzer(site, cb);
+    }
+  ], function(err, results){
+    site = merge( merge(results[0], results[1]), results[2] );
+    site.save();
+    cb(err, site);
+  }); // async
+
+}
+
+
+/** 
+ * Check domain name expiration, ssl status
+ */
+exports.ssl = function(site, cb) {
+  var parsed = url.parse(site.url);
+  var req = https.request({
+    host: parsed.hostname,
+    method: 'get',
+    path: '/'
+  }, function (res) {
+    site.domain.ssl.allowed = true;
+    var cert = res.socket.getPeerCertificate();
+    cert.raw = undefined;
+    site.domain.ssl = {
+      allowed: true,
+      forced: false,
+      expires: new Date(cert.valid_to).toISOString(),
+      created: new Date(cert.valid_from).toISOString(),
+      cert: cert
+    };
+
+    // See if SSL is forced
+    request.get('http://' + parsed.hostname, function (err, res, body) {
+      if (res.request.uri.protocol == 'https:') {
+        site.domain.ssl.forced = true;
+      }
+      return cb(null, site);
+    });
+    
+  });
+  req.end();
+  
+  req.on('error', function(err) {
+    console.log('err');
+    site.domain.ssl = { allowed: false };
+    return cb(null, site);
+  });
+
+  req.on('socket', function (socket) {
+    socket.setTimeout(1000);  
+    socket.on('timeout', function() {
+      console.log('timeout);10');
+      site.domain.ssl = { allowed: false };
+      return cb(null, site);
+    });
+  });
+
+}
+
+
+/** 
+ * Check domain name expiration, ssl status
+ */
+exports.whois = function(site, cb) {
 
   var parsed = url.parse(site.url);
   var domain = tld.getDomain(site.url);
@@ -229,53 +305,45 @@ exports.ping = function(site, cb) {
     ssl: {  }
   };
 
-  /*console.log(parsed);
-  site.domain = null; //@todo tmp
-
-  if (!site.domain || !site.domain.domain) {
-    site.domain = {
-      domain: parsed.hostname,
-      ssl: {}
-    };
-  }*/
-
-  // Get domain information
   whois.lookup(domain, function(err, data) {
-    var match = data.match( /Registrar Registration Expiration Date\:(.*)/ );
-    var expires = match[1].trim();
-    site.domain.expires = expires;
-    site.domain.whois = data;
+    if (data) {
+      site.domain.whois = data;
+
+      var match = data.match( /(Registrar Registration Expiration Date|Registry Expiry Date)\:(.*)/ );
+      if (match && match[2]) {
+        var expires = match[2].trim();
+        site.domain.expires = expires;
+      }
+      else {
+        console.log('COULD NOT REGEX DOMAIN EXPIRATION DATE', data);
+      }
+      return cb(null, site);
+    }
+    else {
+      return cb('no data', null);
+    }
+  });
+
+}
 
 
-    // Get SSL information
-    var req = https.request({
-      host: parsed.hostname,
-      method: 'get',
-      path: '/'
-    }, function (res) {
-      site.domain.ssl.allowed = true;
-      var cert = res.socket.getPeerCertificate();
-      site.domain.ssl = {
-        allowed: true,
-        forced: true,
-        expires: new Date(cert.valid_to).toISOString(),
-        created: new Date(cert.valid_from).toISOString(),
-        cert: cert
-      };
-      site.save();
-    });
-    
-    req.on('error', function(err) {
-      site.domain.ssl = { allowed: false };
-      site.save();
-    });
+/** 
+ * Check domain name expiration, ssl status
+ */
+ exports.wappalyzer = function(site, cb) {
 
-    req.end();
-  console.log(site.domain);
+  var parsed = url.parse(site.url);
+  var options={
+    url: site.url,
+    hostname: parsed.hostname,
+    debug: false
+  }
 
-    // Callback
-    cb(null, true);
-
+  wappalyzer.detectFromUrl( options, function(err, apps, appInfo) {
+    if (appInfo) {
+      site.wappalyzer = appInfo;
+    }
+    cb(err, site);
   });
 
 }
