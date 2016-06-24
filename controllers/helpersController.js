@@ -11,6 +11,7 @@ var ses = require('nodemailer-ses-transport');
 var htmlToText = require('html-to-text');
 var jwt = require('express-jwt');
 var RedisSMQ = require("rsmq");
+var basicAuth = require('basic-auth');
 
 var rsmq = new RedisSMQ( {host: process.env.RABBITMQ_SERVER, port: process.env.RABBITMQ_PORT, ns: "rsmq"} );
 
@@ -20,8 +21,23 @@ exports.jwtCheck = jwt({
   audience: process.env.AUTH0_CLIENT_ID
 });
 
+// Basic auth settings for public API
+exports.basicAuthCheck = function(req, res, next) {
+  var user = basicAuth(req);
+
+  if (!user || !user.name || !user.pass) {
+    return next(new UnauthorizedError('credentials_required', { message: 'No authorization token was found' }));
+  };
+
+  if (user.name ===  process.env.API_AUTH_USER && user.pass === process.env.API_AUTH_PASS) {
+    return next();
+  } else {
+    return next(new UnauthorizedError('credentials_required', { message: 'No authorization token was found' }));
+  };
+};
+
 // Get url for proxied helpers site
-exports.helpersProxyUrl = function(req, site, endpoint, payload) {console.log(site.url);
+exports.helpersProxyUrl = function(req, site, endpoint, payload) {
   var prefix = endpoint.indexOf('menu') == -1 ? '/helpers-json/helpers/v2/' : '/helpers-json/helpers-api-menus/v2/';
   site.url = process.env.DEVEL_MODE == 1 ? 'http://localhost:8080' : site.url;
   var url = site.url + prefix + endpoint;

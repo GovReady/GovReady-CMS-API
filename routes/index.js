@@ -11,6 +11,7 @@ var measureController = require('../controllers/measureController');
 var contactController = require('../controllers/contactController');
 var applicationController = require('../controllers/applicationController');
 var monitorController = require('../controllers/monitorController');
+var publicController = require('../controllers/publicController');
 
 
 /*
@@ -86,6 +87,9 @@ router.route('/sites/:siteId/recommended')
 
 router.route('/sites/:siteId/changeMode')
   .post(helpers.jwtCheck, siteController.postSiteChangeMode)
+
+router.route('/public/info')
+  .get(helpers.basicAuthCheck, publicController.getDomainInfo)
 
 
 // Contacts
