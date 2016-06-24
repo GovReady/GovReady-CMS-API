@@ -13,12 +13,26 @@ var fs = require('fs');
 
 
 /**
- * Get port from environment and store in Express.
+ * Set up lets Encrypt.
  */
-
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
-
+if (process.env.NODE_ENV === 'production') {
+  var LEX = require('letsencrypt-express');
+}
+else {
+  var LEX = require('letsencrypt-express').testing();
+}
+var lex = LEX.create({
+  configDir: require('os').homedir() + '/letsencrypt/etc'
+, approveRegistration: function (hostname, approve) { // leave `null` to disable automatic registration
+    if (hostname === process.env.SSL_DOMAIN) { // Or check a database or list of allowed domains
+      approve(null, {
+        domains: [process.env.SSL_DOMAIN]
+      , email: process.env.SSL_EMAIL
+      , agreeTos: true
+      });
+    }
+  }
+});
 
 
 
@@ -34,10 +48,12 @@ var options = {
 var spec = fs.readFileSync('swagger.yaml', 'utf8');
 var swaggerDoc = jsyaml.safeLoad(spec);
 
+
+
 /**
-   * Create HTTP server.
-   */
-var server = http.createServer(app);
+ * Set up server.
+ */
+lex.onRequest = app;
 
 // Initialize the Swagger middleware
 swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
@@ -53,12 +69,12 @@ swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
   // Serve the Swagger documents and Swagger UI
   app.use(middleware.swaggerUi());
 
-  /**
-   * Listen on provided port, on all network interfaces.
-   */
-  server.listen(port);
-  server.on('error', onError);
-  server.on('listening', onListening);
+  lex.listen([process.env.PORT || '3000'], [443, 5001], function () {
+    var protocol = ('requestCert' in this) ? 'https': 'http';
+    console.log("Listening at " + protocol + '://localhost:' + this.address().port);
+    console.log("Docs available at " + protocol + '://localhost:' + this.address().port + '/docs');
+  });
+
 });
 
 
@@ -80,45 +96,4 @@ function normalizePort(val) {
   }
 
   return false;
-}
-
-/**
- * Event listener for HTTP server "error" event.
- */
-
-function onError(error) {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
-
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
-
-  // handle specific listen errors with friendly messages
-  switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
-      throw error;
-  }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
-  console.log('Swagger-ui is available on http://localhost:%d/docs', port);
 }
