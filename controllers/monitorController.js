@@ -309,7 +309,7 @@ exports.whois = function(site, cb) {
     if (data) {
       site.domain.whois = data;
 
-      var match = data.match( /(Registrar Registration Expiration Date|Registry Expiry Date)\:(.*)/ );
+      var match = data.match( /(Registrar Registration Expiration Date|Registry Expiry Date|Expiration Date)\:(.*)/ );
       if (match && match[2]) {
         var expires = match[2].trim();
         site.domain.expires = expires;
