@@ -33,7 +33,7 @@ http://editor.swagger.io/#/?import=https://raw.githubusercontent.com/GovReady/Go
 
 Copy the `.env` file.  Then run with forever:
 ```
-forever -w ./bin/www 
+sudo forever -w ./bin/www 
 ```
 
 Commands to run to setup Ubuntu 14.04 server:
@@ -45,6 +45,9 @@ wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.31.0/install.sh | 
 nvm install 5.0
 node -v
 npm install -g forever
+
+# Install python (for Let's Encrypt)
+apt-get install python
 
 # Install RabbitMQ
 echo 'deb http://www.rabbitmq.com/debian/ testing main' |
