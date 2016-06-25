@@ -84,7 +84,6 @@ exports.postSitePlugins = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     site.plugins = req.body.plugins;
-    console.log('Plugins', site.plugins);
     site.save();
     return res.status(200).json(site);  
   });
@@ -99,6 +98,7 @@ exports.getSitePlugins = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
+
     if (!site.accounts) {
       return res.status(500).json();  
     }
@@ -123,9 +123,7 @@ exports.postSiteStack = function(req, res) {
     //}
     // @todo: mariadb...
   
-    console.log('Stack', req.body.stack);
     site.stack = req.body.stack;
-    console.log(site);
     site.save();
 
     return res.status(200).json(site);
@@ -141,7 +139,6 @@ exports.getSiteStack = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
-    console.log(site);
     if (!site.stack) {
       return res.status(500).json();  
     }
@@ -208,7 +205,6 @@ exports.getSiteSecurity = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
-    console.log(site);
     if (!site.stack) {
       return res.status(500).json();  
     }
@@ -226,7 +222,6 @@ exports.postSiteChangeMode = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     site.mode = req.body.mode;
-    console.log('Mode', site.mode);
     site.save();
     return res.status(200).json(site.mode);  
   });
