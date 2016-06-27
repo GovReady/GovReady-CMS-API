@@ -1,12 +1,14 @@
 // Load required packages
 var User = require('../models/userModel');
 var Site = require('../models/siteModel');
+var Plugin = require('../models/pluginModel');
 var request = require('request');
 var jwt = require('jsonwebtoken');
 var crypto = require("crypto");
 var merge = require('lodash/merge');
 var yaml = require('js-yaml');
 var fs = require('fs');
+var cmp = require('semver-compare');
 
 var helpers = require('../controllers/helpersController');
 
@@ -92,17 +94,61 @@ exports.postSitePlugins = function(req, res) {
 
 
 /** 
- * Endpoint /sites/:siteId/accounts for GET
+ * Endpoint /sites/:siteId/plugins for GET
  */
 exports.getSitePlugins = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
 
-    if (!site.accounts) {
-      return res.status(500).json();  
-    }
-    return res.status(200).json(site.plugins);
+    //if (!site.plugins) { // @todo?
+    //  return res.status(500).json();  
+    //}
+
+    var platform = site.stack.application.platform.toLowerCase();
+    var names = [];
+    var plugins = {};
+    site.plugins.forEach(function(item, i) {
+      // We only care about installed plugins
+      if ( parseInt(item.status) ) {
+        names.push(item.namespace);
+        plugins[item.namespace] = item;
+      }
+    });
+
+    Plugin.find( {name: {$in: names}, platform: platform } )
+    .then(function (dbPlugins) {
+      dbPlugins.forEach(function(item, i) {
+
+        // See if updates are available 
+        if ( cmp(item.latest_version, plugins[item.name].version) > 0 ) {
+          plugins[item.name].updates = true;
+          
+          // Check for security updates
+          item.vulnerabilities.forEach(function(v, j) {
+            if ( cmp(v.fixed_in, plugins[item.name].version) > 0 ) {
+              plugins[item.name].updates = 'security';
+            }
+          });
+
+        }
+        else {
+          plugins[item.name].updates = false;
+        }
+
+      });
+
+      // Rekey plugins Object as Array
+      var out = [];
+      for (var i in plugins) {
+        out.push(plugins[i]);
+      };
+      return res.status(200).json(out);
+
+    });
+
+
+    
   });
 
 } // function
