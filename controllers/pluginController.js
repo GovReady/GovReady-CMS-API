@@ -3,6 +3,7 @@ var User = require('../models/userModel');
 var Site = require('../models/siteModel');
 var Plugin = require('../models/pluginModel');
 
+var cmp = require('semver-compare');
 var request = require('request');
 var jwt = require('jsonwebtoken');
 var crypto = require("crypto");
@@ -49,7 +50,6 @@ exports.getSiteVulnerabilities = function(req, res) {
 
     var platform = site.stack.application.platform.toLowerCase();
 
-
     switch ( platform ) {
       case 'wordpress':
         site.plugins.unshift({
@@ -79,7 +79,7 @@ exports.getSiteVulnerabilities = function(req, res) {
       functions.push(function( cb ) {
         Plugin.findOne( { name: item.namespace, platform: platform } )
         .then(function (plugin) {
-          console.log('PLUGIN FOUND', item.namespace, plugin);
+          //console.log('PLUGIN FOUND', item.namespace, plugin);
 
           // We don't have a plugin, or we haven't fetched data for a while: ping updates site
           //console.log(dateCutoff , plugin.fetched);
@@ -112,10 +112,11 @@ exports.getSiteVulnerabilities = function(req, res) {
     async.series(functions, function(err, results){
       var out = [];
       
+      // Build out /vulnerabilites endpoint response
       //console.log('PLUGIN RESULTS', results);
       for (var i in results) {
         var plugin = results[i];
-        if (plugin && plugin.vulnerabilities) {
+        if ( (parseInt(plugin.status) || plugin.name == plugin.platform) && plugin && plugin.vulnerabilities ) {
 
           var vulnerabilities = [];
           var item = site.plugins.filter(function(v){
@@ -126,8 +127,7 @@ exports.getSiteVulnerabilities = function(req, res) {
             item = item[0];
             plugin.vulnerabilities.forEach(function(vulnerability, j) {
               //item.version = '0.0.0'; // @todo: this is for testing only!!!
-              //console.log(vulnerability.fixed_in, item.version);
-              if (vulnerability.fixed_in > item.version) {
+              if ( cmp(vulnerability.fixed_in, item.version) > 0 ) {
                 vulnerabilities.push(vulnerability);
               }
             });
