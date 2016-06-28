@@ -148,7 +148,7 @@ exports.getSiteVulnerabilities = function(req, res) {
         plugins: []
       }
       out.forEach(function(item, i) {
-        var key = item.core ? 'core' : 'plugins';
+        var key = item.core || item.platform == item.application ? 'core' : 'plugins';
         rtn[key].push(item);
       });
       return res.status(200).json( rtn );
