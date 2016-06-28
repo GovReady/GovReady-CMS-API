@@ -21,6 +21,17 @@ exports.jwtCheck = jwt({
   audience: process.env.AUTH0_CLIENT_ID
 });
 
+// Check that the user has access to edit the site
+exports.siteAccessCheck = function(req, res, next) {
+  if (req.params.siteId) {
+    if ( !( req.user.app_metadata && req.user.app_metadata.sites.length && req.user.app_metadata.sites.indexOf(req.params.siteId) >= 0 ) ) {
+      console.log('ACCESS DENIED', req.params.siteId, req.user.app_metadata.sites);
+      return res.status(403).send('Access denied');
+    }
+  }
+  return next();
+}
+
 // Basic auth settings for public API
 exports.basicAuthCheck = function(req, res, next) {
   var user = basicAuth(req);

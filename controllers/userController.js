@@ -91,7 +91,6 @@ exports.postInitialize = function(req, res) {
 
         })
         .catch(function (err) {
-          console.log(clients);
           return res.status(500).json(err);
         }); // auth0.clients.get()
     }
@@ -114,7 +113,6 @@ var createSite = function(req, cb) {
     status: {}
   });
   site.save();
-  console.log(site);
   cb(site);
 }
 
@@ -129,9 +127,10 @@ exports.postRefreshToken = function(req, res) {
     "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer", // @todo?
     'target': process.env.AUTH0_CLIENT_ID,
     'client_id': process.env.AUTH0_CLIENT_ID,
-    "refresh_token": 'iI3KDzXwjD8fLy3MVJLXqveknV0y93XhomEMEmGeXBdMk',//req.body.refresh_token,
+    //"refresh_token": req.body.refresh_token,//was 'iI3KDzXwjD8fLy3MVJLXqveknV0y93XhomEMEmGeXBdMk'
+    'refresh_token': 'iI3KDzXwjD8fLy3MVJLXqveknV0y93XhomEMEmGeXBdMk',
     "api_type": "app",
-    'scope': 'openid'
+    'scope': 'openid app_metadata'
   };
 
   // Note: auth0.tokens.getDelegationToken() requires an id_token parameter, which we don't necessarily
@@ -142,18 +141,61 @@ exports.postRefreshToken = function(req, res) {
     method: 'POST',
     body: data
   };
-  console.log(requestData);
+  //console.log(requestData);
   request(requestData, function (err, response, body) {
     if (err || !response.body.id_token) {
       return res.status(500).json(err);
     }
+
     return res.status(200).json(response.body);
   });
 
+  // Add the site to the user
+  // Get the User object
+  /*
+*/
 
 } // function
 
 
+
+/** 
+ * Endpoint /user-site for POST (anonymous endpoint)
+ */
+exports.postUserSite = function(req, res) {
+  management
+    .users.get( { id: req.user.sub } )
+    .then(function (user) {
+      // Update the Auth0 Client
+      console.log(user);
+      var data = {
+        app_metadata: user.app_metadata ? user.app_metadata : {}
+      }
+      data.app_metadata.sites = user.app_metadata.sites ? user.app_metadata.sites : [];
+      
+      // Add the site to the user
+      if ( data.app_metadata.sites.indexOf(req.params.siteId) == -1 ) {
+        data.app_metadata.sites.push(req.params.siteId);
+
+        management
+          .users.update( { id: req.user.sub }, data )
+          .then(function (client) {
+            return res.status(200).json(user.app_metadata);
+          })
+          .catch(function (err) {
+            return res.status(500).json(err);
+          }); // auth0.users.update()
+
+      } // if
+      else {
+        return res.status(500).json('User already belongs to site');
+      }
+
+    })
+    .catch(function (err) {
+      return res.status(500).json(err);
+    }); // auth0.clients.get()
+}
 
 
 

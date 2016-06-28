@@ -33,8 +33,11 @@ router.route('/initialize')
 router.route('/refresh-token')
   .post(userController.postRefreshToken);
 
-router.route('/users')
-  .post(helpers.jwtCheck, userController.postUser);
+router.route('/user-site/:siteId')
+  .post(helpers.jwtCheck, userController.postUserSite);
+
+//router.route('/users')
+//  .post(helpers.jwtCheck, userController.postUser);
 /*
 router.route('/users/:userId')
   .get(helpers.jwtCheck, userController.getUser)
@@ -63,7 +66,7 @@ router.route('/sites/:siteId/collect')
 
 router.route('/sites/:siteId/plugins')
   .post(helpers.jwtCheck, siteController.postSitePlugins)
-  .get(helpers.jwtCheck, siteController.getSitePlugins)
+  .get(helpers.jwtCheck, siteController.getSitePlugins) // helpers.siteAccessCheck,
 
 router.route('/sites/:siteId/accounts')
   .post(helpers.jwtCheck, siteController.postSiteAccounts)
