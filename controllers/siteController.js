@@ -106,11 +106,37 @@ exports.getSitePlugins = function(req, res) {
     //}
 
     var platform = site.stack.application.platform.toLowerCase();
+
+    // Add core as plugin
+    switch ( platform ) {
+      case 'wordpress':
+        site.plugins.unshift({
+          type: 'wordpresses',
+          namespace: site.stack.application.version.replace('.', ''),
+          version: site.stack.application.version,
+          core: true,
+          status: true
+        });
+        break;
+      case 'drupal':
+        var version = site.stack.application.version;
+        var arrVersion = version.split('.');
+        var majorVersion = arrVersion[0] + '.x';
+        site.plugins.unshift({
+          type: majorVersion,
+          namespace: platform,
+          version: version,
+          core: true,
+          status: true
+        });
+        break;
+    }
+
     var names = [];
     var plugins = {};
     site.plugins.forEach(function(item, i) {
       // We only care about installed plugins
-      if ( parseInt(item.status) ) {
+      if ( item.status ) {
         names.push(item.namespace);
         plugins[item.namespace] = item;
       }
@@ -118,16 +144,21 @@ exports.getSitePlugins = function(req, res) {
 
     Plugin.find( {name: {$in: names}, platform: platform } )
     .then(function (dbPlugins) {
+      //console.log(dbPlugins);
       dbPlugins.forEach(function(item, i) {
 
         // See if updates are available 
-        if ( cmp(item.latest_version, plugins[item.name].version) > 0 ) {
+        if ( item.latest_version && cmp(item.latest_version, plugins[item.name].version) > 0 ) {
           plugins[item.name].updates = true;
-          
+
           // Check for security updates
           item.vulnerabilities.forEach(function(v, j) {
-            if ( cmp(v.fixed_in, plugins[item.name].version) > 0 ) {
+            if ( v.fixed_in && cmp(v.fixed_in, plugins[item.name].version) > 0 ) {
               plugins[item.name].updates = 'security';
+              if (plugins.vulnerabilities == undefined) {
+                plugins[item.name].vulnerabilities = [];
+              }
+              plugins[item.name].vulnerabilities.push(v);
             }
           });
 
@@ -137,11 +168,16 @@ exports.getSitePlugins = function(req, res) {
         }
 
       });
+      //console.log(plugins);
 
       // Rekey plugins Object as Array
-      var out = [];
+      var out = {
+        core: [],
+        plugins: []
+      };
       for (var i in plugins) {
-        out.push(plugins[i]);
+        var key = plugins[i].core ? 'core' : 'plugins';
+        out[key].push(plugins[i]);
       };
       return res.status(200).json(out);
 

@@ -55,7 +55,8 @@ exports.getSiteVulnerabilities = function(req, res) {
         site.plugins.unshift({
           type: 'wordpresses',
           namespace: site.stack.application.version.replace('.', ''),
-          version: site.stack.application.version
+          version: site.stack.application.version,
+          core: true
         });
         break;
       case 'drupal':
@@ -65,7 +66,8 @@ exports.getSiteVulnerabilities = function(req, res) {
         site.plugins.unshift({
           type: majorVersion,
           namespace: platform,
-          version: version
+          version: version,
+          core: true
         });
         break;
     }
@@ -73,7 +75,7 @@ exports.getSiteVulnerabilities = function(req, res) {
     //site.plugins = [site.plugins[0]];  // @todo: only use this for debugging
     //console.log('PLUGINS TO LOOKUP', site.plugins);
 
-    dateCutoff.setDate(dateCutoff.getDate() - 7);
+    dateCutoff.setDate(dateCutoff.getDate() - 7); // cache lifetime for plugin data is 7 days
     site.plugins.forEach(function(item, i) {
 
       functions.push(function( cb ) {
@@ -84,7 +86,7 @@ exports.getSiteVulnerabilities = function(req, res) {
           // We don't have a plugin, or we haven't fetched data for a while: ping updates site
           //console.log(dateCutoff , plugin.fetched);
           if (plugin === null || dateCutoff > plugin.fetched) {
-            console.log('LOOKING UP', item.namespace, platform);
+            //console.log('LOOKING UP', item.namespace, platform);
             //Plugin.remove( { name: item.namespace, platform: platform } );
             switch ( platform ) {
               case 'wordpress':
@@ -116,18 +118,19 @@ exports.getSiteVulnerabilities = function(req, res) {
       //console.log('PLUGIN RESULTS', results);
       for (var i in results) {
         var plugin = results[i];
-        if ( (parseInt(plugin.status) || plugin.name == plugin.platform) && plugin && plugin.vulnerabilities ) {
+        if ( plugin && plugin.vulnerabilities ) {
 
           var vulnerabilities = [];
           var item = site.plugins.filter(function(v){
             return v.namespace == plugin.name;
           });
-          //console.log('PLUGIN', plugin);
+
           if (item) {
             item = item[0];
             plugin.vulnerabilities.forEach(function(vulnerability, j) {
               //item.version = '0.0.0'; // @todo: this is for testing only!!!
-              if ( cmp(vulnerability.fixed_in, item.version) > 0 ) {
+              //console.log(vulnerability, vulnerability.fixed_in, item.version);
+              if ( vulnerability.fixed_in != null && cmp(vulnerability.fixed_in, item.version) > 0 ) {
                 vulnerabilities.push(vulnerability);
               }
             });
@@ -140,7 +143,15 @@ exports.getSiteVulnerabilities = function(req, res) {
         } // if (plugin && plugin.vulnerabilities)
       }; // forEach
 
-      return res.status(200).json( out );
+      var rtn = {
+        core: [],
+        plugins: []
+      }
+      out.forEach(function(item, i) {
+        var key = item.core ? 'core' : 'plugins';
+        rtn[key].push(item);
+      });
+      return res.status(200).json( rtn );
 
     }); // async 
 
@@ -169,9 +180,9 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
       data.name = name;
       data.fetched = Date.now();
       if (key != name) {
-        data.version = key;
         data.application = 'wordpress';
         data.type = 'application';
+        data.latest_version = data.vulnerabilities[data.vulnerabilities.length-1].fixed_in;
       }
       plugin = new Plugin(data);
       plugin.save();
