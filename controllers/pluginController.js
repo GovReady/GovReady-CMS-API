@@ -78,36 +78,40 @@ exports.getSiteVulnerabilities = function(req, res) {
     dateCutoff.setDate(dateCutoff.getDate() - 7); // cache lifetime for plugin data is 7 days
     site.plugins.forEach(function(item, i) {
 
-      functions.push(function( cb ) {
-        Plugin.findOne( { name: item.namespace, platform: platform } )
-        .then(function (plugin) {
-          //console.log('PLUGIN FOUND', item.namespace, plugin);
+      if (item.active) {
 
-          // We don't have a plugin, or we haven't fetched data for a while: ping updates site
-          //console.log(dateCutoff , plugin.fetched);
-          if (plugin === null || dateCutoff > plugin.fetched) {
-            //console.log('LOOKING UP', item.namespace, platform);
-            //Plugin.remove( { name: item.namespace, platform: platform } );
-            switch ( platform ) {
-              case 'wordpress':
-                getWordPressPluginVulnerabilities(item.type ? item.type : 'plugins', item.namespace, function(err, data) {
-                  cb(err, data);
-                });
-                break;
-              case 'drupal':
-                getDrupalModuleVulnerabilities(item.type ? item.type : majorVersion, item.namespace, function(err, data) {
-                  cb(err, data);
-                });
-                break;
+        functions.push(function( cb ) {
+          Plugin.findOne( { name: item.namespace, platform: platform } ).sort( { fetched: -1 } )
+          .then(function (plugin) {
+            //console.log('PLUGIN FOUND', item.namespace, plugin);
+
+            // We don't have a plugin, or we haven't fetched data for a while: ping updates site
+            //console.log(dateCutoff , plugin.fetched);
+            if (plugin === null || dateCutoff > plugin.fetched) {
+              //console.log('LOOKING UP', item.namespace, platform);
+              Plugin.find({ name: item.namespace, platform: platform }).remove().exec();
+              switch ( platform ) {
+                case 'wordpress':
+                  getWordPressPluginVulnerabilities(item.type ? item.type : 'plugins', item.namespace, function(err, data) {
+                    cb(err, data);
+                  });
+                  break;
+                case 'drupal':
+                  getDrupalModuleVulnerabilities(item.type ? item.type : majorVersion, item.namespace, function(err, data) {
+                    cb(err, data);
+                  });
+                  break;
+              }
             }
-          }
-          // Return the plugin from the db
-          else {
-            cb(null, plugin);
-          }
+            // Return the plugin from the db
+            else {
+              cb(null, plugin);
+            }
 
-        });
-      }); // push
+          });
+        }); // push
+
+      } // if (item.active)
 
     }); // forEach
 
@@ -148,7 +152,7 @@ exports.getSiteVulnerabilities = function(req, res) {
         plugins: []
       }
       out.forEach(function(item, i) {
-        var key = item.core || item.platform == item.application ? 'core' : 'plugins';
+        var key = item.core || item.platform == item.name ? 'core' : 'plugins';
         rtn[key].push(item);
       });
       return res.status(200).json( rtn );
@@ -244,10 +248,11 @@ var getDrupalModuleVulnerabilities = function(type, name, cb) {
         //var key = Object.keys(body)[0];
         //data = body[key];
         data.platform = 'drupal';
-        data.name = name;
+        data.namespace = name;
         data.fetched = Date.now();
         
         plugin = new Plugin(data);
+        console.log(plugin)
         plugin.save();
         return cb(err, data);
       });
