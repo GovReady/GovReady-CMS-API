@@ -48,7 +48,7 @@ exports.getSiteVulnerabilities = function(req, res) {
     var functions = [];
     var dateCutoff = new Date();
 
-    var platform = site.stack.application.platform.toLowerCase();
+    var platform = site.application ? site.application : helpers.siteApplication(site);
 
     switch ( platform ) {
       case 'wordpress':
