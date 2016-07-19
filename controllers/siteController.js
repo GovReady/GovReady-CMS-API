@@ -2,6 +2,10 @@
 var User = require('../models/userModel');
 var Site = require('../models/siteModel');
 var Plugin = require('../models/pluginModel');
+var Contact = require('../models/contactModel');
+var Measure = require('../models/measureModel');
+var Submission = require('../models/submissionModel');
+var Scan = require('../models/scanModel');
 var request = require('request');
 var jwt = require('jsonwebtoken');
 var crypto = require("crypto");
@@ -34,13 +38,39 @@ exports.deleteSite = function(req, res) {
   .then(function (site) {
     console.log(site);
 
-    //Contact.find({ siteId: req.params.siteId }).remove();
-    //Measure.find({ siteId: req.params.siteId }).remove();
-    //Submission.find({ siteId: req.params.siteId }).remove();
-    //Scan.find({ siteId: req.params.siteId }).remove();
-    Site.findOne({ _id: req.params.siteId }).remove();
+    Contact.find({ siteId: req.params.siteId }).remove().exec();
+    Measure.find({ siteId: req.params.siteId }).remove().exec();
+    Submission.find({ siteId: req.params.siteId }).remove().exec();
+    Scan.find({ siteId: req.params.siteId }).remove().exec();
+    Site.findOne({ _id: req.params.siteId }).remove().exec();
 
     site.save();
+    return res.status(200).json({status: 'success'});  
+  });
+
+} // function
+
+/** 
+ * Endpoint /sites/:siteId/load/demo for POST
+ */
+exports.loadDemoSite = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+   
+    // Delete old associated Documents
+    Contact.find({ siteId: req.params.siteId }).remove().exec();
+    Measure.find({ siteId: req.params.siteId }).remove().exec();
+    Submission.find({ siteId: req.params.siteId }).remove().exec();
+    Scan.find({ siteId: req.params.siteId }).remove().exec();
+
+    // Load in demo content
+    var measureController = require('../controllers/measureController');
+    var contactController = require('../controllers/contactController');
+    req.params.measureStack = req.params.contactStack = 'demo';
+    measureController.postSiteMeasuresLoad(req);
+    contactController.postSiteContactsLoad(req);
+
     return res.status(200).json({status: 'success'});  
   });
 
