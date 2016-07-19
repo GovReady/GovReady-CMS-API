@@ -20,7 +20,7 @@ var SiteSchema   = new mongoose.Schema({
   domain: Object,
   wappalyzer: Object,
   status: Object,
-  mode: String
+  mode: String // automatic || manual || local
 });
 
 SiteSchema.plugin(encrypt, { encryptionKey: process.env.DB_ENC_KEY, signingKey: process.env.DB_SIG_KEY });
