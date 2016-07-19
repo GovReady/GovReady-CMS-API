@@ -325,7 +325,8 @@ exports.whois = function(site, cb) {
       return cb(null, site);
     }
     else {
-      return cb('no data', null);
+      console.log('WHOIS ERR', err);
+      return cb(err, null);
     }
   });
 
