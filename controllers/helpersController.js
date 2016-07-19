@@ -96,7 +96,13 @@ exports.helpersRewriteMult = function(entities) {
 
 // Get the application key from a Site
 exports.siteApplication = function(site) {
-  return site.stack.application.platform.toLowerCase();
+  if (site.application) {
+    return site.application.toLowerCase();
+  }
+  else if (site.stack.application) {
+    return site.stack.application.platform.toLowerCase();
+  }
+  return '';
 }
 
 // Find a site by id (or url)
