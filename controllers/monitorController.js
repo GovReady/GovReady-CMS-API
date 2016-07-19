@@ -128,7 +128,7 @@ exports.trigger = function(site, key, endpoint, cb) {
   if (site == null) {
     return res.status(500).json( {'err': 'Site not found'} );
   }
-  site.application = site.application ? site.application : helpers.siteApplication(site);
+  site.application = helpers.siteApplication(site);
   switch ( site.application ) {
     case 'wordpress':
       var url = site.url + '/wp-admin/admin-ajax.php?action=govready_v1_trigger';

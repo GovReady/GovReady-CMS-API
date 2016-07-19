@@ -9,6 +9,7 @@ var siteController = require('../controllers/siteController');
 var pluginController = require('../controllers/pluginController');
 var measureController = require('../controllers/measureController');
 var contactController = require('../controllers/contactController');
+var scanController = require('../controllers/scanController');
 var applicationController = require('../controllers/applicationController');
 var monitorController = require('../controllers/monitorController');
 var publicController = require('../controllers/publicController');
@@ -34,39 +35,18 @@ router.route('/refresh-token')
   .post(userController.postRefreshToken);
 
 router.route('/user-site/:siteId')
-  .post(helpers.jwtCheck, userController.postUserSite);
-
-//router.route('/users')
-//  .post(helpers.jwtCheck, userController.postUser);
-/*
-router.route('/users/:userId')
-  .get(helpers.jwtCheck, userController.getUser)
-  .put(helpers.jwtCheck, userController.putUser)
-  .delete(helpers.jwtCheck, userController.deleteUser);
-
-
-router.route('/sites')
-  .post(helpers.jwtCheck, siteController.postSite);
+  .post(helpers.jwtCheck, userController.postUserSite)
 
 router.route('/sites/:siteId')
   .get(helpers.jwtCheck, siteController.getSite)
-  .put(helpers.jwtCheck, siteController.putSite)
-  .delete(helpers.jwtCheck, siteController.deleteSite);
-*/
-
-router.route('/sites/:siteId')
-  .get(helpers.jwtCheck, siteController.getSite)
-  //.put(helpers.jwtCheck, siteController.putSite)
-  //.delete(helpers.jwtCheck, siteController.deleteSite);
+  .delete(helpers.jwtCheck, siteController.deleteSite)
 
 router.route('/sites/:siteId/collect')
   .post(helpers.jwtCheck, siteController.postSiteCollect)
-  //.put(helpers.jwtCheck, siteController.putSite)
-  //.delete(helpers.jwtCheck, siteController.deleteSite);
 
 router.route('/sites/:siteId/plugins')
   .post(helpers.jwtCheck, siteController.postSitePlugins)
-  .get(helpers.jwtCheck, siteController.getSitePlugins) // helpers.siteAccessCheck,
+  .get(helpers.jwtCheck, siteController.getSitePlugins) 
 
 router.route('/sites/:siteId/accounts')
   .post(helpers.jwtCheck, siteController.postSiteAccounts)
@@ -75,9 +55,6 @@ router.route('/sites/:siteId/accounts')
 router.route('/sites/:siteId/stack')
   .get(helpers.jwtCheck, siteController.getSiteStack)
   .post(helpers.jwtCheck, siteController.postSiteStack);
-  //.post(helpers.jwtCheck, siteController.postSiteCollect)
-  //.put(helpers.jwtCheck, siteController.putSite)
-  //.delete(helpers.jwtCheck, siteController.deleteSite);
 
 router.route('/sites/:siteId/domain')
   .get(helpers.jwtCheck, siteController.getSiteDomain)
@@ -126,6 +103,14 @@ router.route('/sites/:siteId/measures/:measureId/submissions')
   .get(helpers.jwtCheck, measureController.getSiteMeasuresSubmissions)
   .post(helpers.jwtCheck, measureController.postSiteMeasuresSubmission)
 
+// Scans
+router.route('/sites/:siteId/scans')
+  .get(helpers.jwtCheck, scanController.getSiteScans)
+  .post(helpers.jwtCheck, scanController.postSiteScan)
+
+router.route('/sites/:siteId/scans/:scanId')
+  .get(helpers.jwtCheck, scanController.getSiteScan)
+  // @todo: .patch(helpers.jwtCheck, scanController.patchSiteScan)
 
 // Plugins
 router.route('/plugins')
