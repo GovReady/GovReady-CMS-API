@@ -6,6 +6,7 @@ var encrypt = require('mongoose-encryption');
 var SiteSchema   = new mongoose.Schema({
   userId: String,
   name: String,
+  application: String,
   slug: String,
   description: String,
   type: String,

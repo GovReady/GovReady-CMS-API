@@ -109,7 +109,8 @@ exports.postInitialize = function(req, res) {
 var createSite = function(req, cb) {
   // Create monogo Site            
   var site = new Site({
-    'url': req.body.url,
+    url: req.body.url,
+    application: req.body.application,
     status: {}
   });
   site.save();

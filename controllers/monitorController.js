@@ -128,7 +128,6 @@ exports.trigger = function(site, key, endpoint, cb) {
   if (site == null) {
     return res.status(500).json( {'err': 'Site not found'} );
   }
-  console.log(site);
   site.application = site.application ? site.application : helpers.siteApplication(site);
   switch ( site.application ) {
     case 'wordpress':
@@ -181,7 +180,7 @@ exports.accounts = function(site, cb) {
  * Wrapper to collect stack data
  */
 exports.stack = function(site, cb) {
-  exports.trigger(site, 'stack', 'stack/phpmyadmin', cb);
+  exports.trigger(site, 'stack', 'stack', cb);
 }
 
 
