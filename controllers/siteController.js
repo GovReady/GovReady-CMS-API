@@ -26,6 +26,28 @@ exports.getSite = function(req, res) {
 
 
 /** 
+ * Endpoint /sites/:siteId for DELETE
+ */
+exports.deleteSite = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+    console.log(site);
+
+    //Contact.find({ siteId: req.params.siteId }).remove();
+    //Measure.find({ siteId: req.params.siteId }).remove();
+    //Submission.find({ siteId: req.params.siteId }).remove();
+    //Scan.find({ siteId: req.params.siteId }).remove();
+    Site.findOne({ _id: req.params.siteId }).remove();
+
+    site.save();
+    return res.status(200).json({status: 'success'});  
+  });
+
+} // function
+
+
+/** 
  * Endpoint /sites/:siteId/collect for POST
  */
 exports.postSiteCollect = function(req, res) {
@@ -62,7 +84,8 @@ exports.getSiteAccounts = function(req, res) {
   .then(function (site) {
 
     if (!site.accounts) {
-      return res.status(500).json({err: 'Could not find any accounts'});  
+      //return res.status(500).json({err: 'Could not find any accounts'});
+      site.accounts = [];
     }
 
     //var timestamp = Math.floor(Date.now() / 1000) - 2592000; // 30 days ago
@@ -86,6 +109,7 @@ exports.postSitePlugins = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     site.plugins = req.body.plugins;
+    console.log('PLUGINS POST', site);
     site.save();
     return res.status(200).json(site);  
   });
@@ -147,7 +171,8 @@ exports.getSitePlugins = function(req, res) {
       //console.log(dbPlugins);
       dbPlugins.forEach(function(item, i) {
 
-        // See if updates are available 
+        // See if updates are available
+        plugin.latest_version = item.latest_version;
         if ( item.latest_version && cmp(item.latest_version, plugins[item.name].version) > 0 ) {
           plugins[item.name].updates = true;
 
@@ -266,10 +291,11 @@ exports.getSiteStatus = function(req, res) {
  * Endpoint /sites/:siteId/recommended for GET
  */
 exports.getSiteRecommended = function(req, res) {
-
+console.log('REC');
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     try {
+      console.log(__dirname + '/../data/');
       var doc = yaml.safeLoad(fs.readFileSync(__dirname + '/../data/' + helpers.siteApplication(site) + '-recommend.yml', 'utf8'));
       return res.status(200).json(doc);
     } catch (e) {
@@ -309,8 +335,6 @@ exports.postSiteChangeMode = function(req, res) {
   });
 
 } // function
-
-
 
 
 /*
