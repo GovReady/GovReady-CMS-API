@@ -40,11 +40,10 @@ exports.getSiteVulnerabilities = function(req, res) {
     if (!site) {
       return res.status(500).json( {err: 'no site'} );
     }
-    console.log(site);
 
     var functions = [];
     var dateCutoff = new Date();
-    var platform = site.application ? site.application : helpers.siteApplication(site);
+    var platform = helpers.siteApplication(site);
 
     if ( site.stack ) {
       switch ( platform ) {
@@ -53,7 +52,8 @@ exports.getSiteVulnerabilities = function(req, res) {
             type: 'wordpresses',
             namespace: site.stack.application.version.replace('.', ''),
             version: site.stack.application.version,
-            core: true
+            core: true,
+            status: true
           });
           break;
         case 'drupal':
@@ -64,7 +64,8 @@ exports.getSiteVulnerabilities = function(req, res) {
             type: majorVersion,
             namespace: platform,
             version: version,
-            core: true
+            core: true,
+            status: true
           });
           break;
       } 
@@ -76,12 +77,12 @@ exports.getSiteVulnerabilities = function(req, res) {
     dateCutoff.setDate(dateCutoff.getDate() - 7); // cache lifetime for plugin data is 7 days
     site.plugins.forEach(function(item, i) {
 
-      if (item.active) {
+      if (item.status) {
 
         functions.push(function( cb ) {
           Plugin.findOne( { name: item.namespace, platform: platform } ).sort( { fetched: -1 } )
           .then(function (plugin) {
-            //console.log('PLUGIN FOUND', item.namespace, plugin);
+            console.log('PLUGIN FOUND', item.namespace, plugin);
 
             // We don't have a plugin, or we haven't fetched data for a while: ping updates site
             //console.log(dateCutoff , plugin.fetched);
@@ -109,7 +110,7 @@ exports.getSiteVulnerabilities = function(req, res) {
           });
         }); // push
 
-      } // if (item.active)
+      } // if (item.status)
 
     }); // forEach
 
@@ -151,6 +152,7 @@ exports.getSiteVulnerabilities = function(req, res) {
       }
       out.forEach(function(item, i) {
         var key = item.core || item.platform == item.name ? 'core' : 'plugins';
+        console.log(key);
         rtn[key].push(item);
       });
       return res.status(200).json( rtn );
