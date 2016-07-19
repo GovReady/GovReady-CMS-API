@@ -180,7 +180,7 @@ exports.accounts = function(site, cb) {
  * Wrapper to collect stack data
  */
 exports.stack = function(site, cb) {
-  exports.trigger(site, 'stack', 'stack/phpmyadmin', cb);
+  exports.trigger(site, 'stack', 'stack', cb);
 }
 
 
