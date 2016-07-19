@@ -40,40 +40,38 @@ exports.getSiteVulnerabilities = function(req, res) {
     if (!site) {
       return res.status(500).json( {err: 'no site'} );
     }
-
-    if (!site.stack || !site.stack.application) {
-      return res.status(500).json( {err: 'site.stack does not yet exist'} );
-    }
+    console.log(site);
 
     var functions = [];
     var dateCutoff = new Date();
-
     var platform = site.application ? site.application : helpers.siteApplication(site);
 
-    switch ( platform ) {
-      case 'wordpress':
-        site.plugins.unshift({
-          type: 'wordpresses',
-          namespace: site.stack.application.version.replace('.', ''),
-          version: site.stack.application.version,
-          core: true
-        });
-        break;
-      case 'drupal':
-        var version = site.stack.application.version;
-        var arrVersion = version.split('.');
-        var majorVersion = arrVersion[0] + '.x';
-        site.plugins.unshift({
-          type: majorVersion,
-          namespace: platform,
-          version: version,
-          core: true
-        });
-        break;
-    }
-
+    if ( site.stack ) {
+      switch ( platform ) {
+        case 'wordpress':
+          site.plugins.unshift({
+            type: 'wordpresses',
+            namespace: site.stack.application.version.replace('.', ''),
+            version: site.stack.application.version,
+            core: true
+          });
+          break;
+        case 'drupal':
+          var version = site.stack.application.version;
+          var arrVersion = version.split('.');
+          var majorVersion = arrVersion[0] + '.x';
+          site.plugins.unshift({
+            type: majorVersion,
+            namespace: platform,
+            version: version,
+            core: true
+          });
+          break;
+      } 
+    } // if
+    
     //site.plugins = [site.plugins[0]];  // @todo: only use this for debugging
-    //console.log('PLUGINS TO LOOKUP', site.plugins);
+    console.log('PLUGINS TO LOOKUP', site.plugins);
 
     dateCutoff.setDate(dateCutoff.getDate() - 7); // cache lifetime for plugin data is 7 days
     site.plugins.forEach(function(item, i) {
