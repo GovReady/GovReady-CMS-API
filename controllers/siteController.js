@@ -172,9 +172,10 @@ exports.getSitePlugins = function(req, res) {
       dbPlugins.forEach(function(item, i) {
 
         // See if updates are available
-        plugin.latest_version = item.latest_version;
+        //plugin.latest_version = item.latest_version != undefined ? item.latest_version : null;
         if ( item.latest_version && cmp(item.latest_version, plugins[item.name].version) > 0 ) {
           plugins[item.name].updates = true;
+          //plugin.latest_version = item.latest_version;
 
           // Check for security updates
           item.vulnerabilities.forEach(function(v, j) {
@@ -193,7 +194,7 @@ exports.getSitePlugins = function(req, res) {
         }
 
       });
-      //console.log(plugins);
+      //console.log('plugins', plugins);
 
       // Rekey plugins Object as Array
       var out = {
