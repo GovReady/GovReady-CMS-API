@@ -199,11 +199,12 @@ exports.getSitePlugins = function(req, res) {
     Plugin.find( {name: {$in: names}, platform: platform } )
     .then(function (dbPlugins) {
       //console.log(dbPlugins);
-      dbPlugins.forEach(function(item, i) {
+      for (var i = 0, len = dbPlugins.length; i < len; i++) {
+        var item = dbPlugins[i];
 
         // See if updates are available
         //plugin.latest_version = item.latest_version != undefined ? item.latest_version : null;
-        if ( item.latest_version && cmp(item.latest_version, plugins[item.name].version) > 0 ) {
+        if ( plugins[item.name].version != null && item.latest_version && cmp(item.latest_version, plugins[item.name].version) > 0 ) {
           plugins[item.name].updates = true;
           //plugin.latest_version = item.latest_version;
 
@@ -222,9 +223,9 @@ exports.getSitePlugins = function(req, res) {
         else {
           plugins[item.name].updates = false;
         }
+        //console.log('asd', i, len, item);
 
-      });
-      //console.log('plugins', plugins);
+      }
 
       // Rekey plugins Object as Array
       var out = {
