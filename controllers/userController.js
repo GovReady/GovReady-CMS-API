@@ -199,6 +199,37 @@ exports.postUserSite = function(req, res) {
 }
 
 
+/** 
+ * Endpoint /sites for GET
+ */
+exports.getSites = function(req, res) {
+  console.log(req.user);
+
+  management
+    .users.get( { id: req.user.sub } )
+    .then(function (user) {
+      // Update the Auth0 Client
+      Site.find( { _id: { $in: user.app_metadata.sites } } )
+        .then(function (sites) {
+          
+          var out = [];
+          var site;
+          for (var i in sites) {
+            site = sites[i];
+            out.push({
+              title: site.title ? site.title : site.url,
+              url: site.url
+            });
+          }
+
+          return res.status(200).json(out);  
+
+        });
+    });
+      
+
+} 
+
 
 
 
@@ -211,3 +242,4 @@ exports.postUser = function(req, res) {
   res.status(status).json(out);
   
 } // function
+

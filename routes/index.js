@@ -35,12 +35,15 @@ router.route('/refresh-token')
   .post(userController.postRefreshToken);
 
 router.route('/user-site/:siteId')
-  .post(helpers.jwtCheck, userController.postUserSite)
+  .post(helpers.jwtCheck, userController.postUserSite);
 
+
+router.route('/sites')
+  .get(helpers.jwtCheck, userController.getSites);
 
 router.route('/sites/:siteId')
   .get(helpers.jwtCheck, siteController.getSite)
-  .delete(helpers.jwtCheck, siteController.deleteSite)
+  .delete(helpers.jwtCheck, siteController.deleteSite);
 
 router.route('/sites/:siteId/load/demo')
   .post(helpers.jwtCheck, siteController.loadDemoSite);
