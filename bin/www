@@ -23,7 +23,7 @@ else {
   var LEX = require('letsencrypt-express').testing();
 }
 var lex = LEX.create({
-  configDir: os.homedir() + '/letsencrypt/etc'
+  configDir: os.homedir ? os.homedir() + '/letsencrypt/etc' : ''
 , approveRegistration: function (hostname, approve) { // leave `null` to disable automatic registration
     if (hostname === process.env.SSL_DOMAIN) { // Or check a database or list of allowed domains
       approve(null, {
