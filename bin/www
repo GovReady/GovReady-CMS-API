@@ -7,32 +7,32 @@
 var app = require('../app');
 var debug = require('debug')('nodejs-regular-webapp2:server');
 var http = require('http');
+var https = require('https');
 var swaggerTools = require('swagger-tools');
 var jsyaml = require('js-yaml');
 var fs = require('fs');
-var os = require('os');
+var LEX = require('letsencrypt-express');
 
 
-/**
- * Set up lets Encrypt.
- */
-if (process.env.NODE_ENV === 'production') {
-  var LEX = require('letsencrypt-express');
-}
-else {
-  var LEX = require('letsencrypt-express').testing();
-}
+
+// returns an instance of node-letsencrypt with additional helper methods
 var lex = LEX.create({
-  configDir: os.homedir ? os.homedir() + '/letsencrypt/etc' : ''
-, approveRegistration: function (hostname, approve) { // leave `null` to disable automatic registration
-    if (hostname === process.env.SSL_DOMAIN) { // Or check a database or list of allowed domains
-      approve(null, {
-        domains: [process.env.SSL_DOMAIN]
-      , email: process.env.SSL_EMAIL
-      , agreeTos: true
-      });
-    }
-  }
+  // set to https://acme-v01.api.letsencrypt.org/directory in production
+  server: process.env.NODE_ENV === 'production' ? 'production' : 'staging',
+
+  // If you wish to replace the default plugins, you may do so here
+  //
+  //, challenges: { 'http-01': require('le-challenge-fs').create({ webrootPath: '/tmp/acme-challenges' }) }
+  //, store: require('le-store-certbot').create({ webrootPath: '/tmp/acme-challenges' })
+
+  // You probably wouldn't need to replace the default sni handler
+  // See https://github.com/Daplie/le-sni-auto if you think you do
+  //, sni: require('le-sni-auto').create({})
+
+  approveDomains: [ process.env.SSL_DOMAIN ],
+  email: process.env.SSL_EMAIL,
+  agreeTos: true
+  //renewBy: 30
 });
 
 
@@ -51,31 +51,39 @@ var swaggerDoc = jsyaml.safeLoad(spec);
 
 
 
-/**
- * Set up server.
- */
-
-lex.onRequest = app;
-
 // Initialize the Swagger middleware
 swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
+  // Interpret Swagger resources and attach metadata to request - must be first in swagger-tools middleware chain
+  app.use(middleware.swaggerMetadata());
+
+  // Validate Swagger requests
+  app.use(middleware.swaggerValidator());
+
+  // Route validated requests to appropriate controller
+  app.use(middleware.swaggerRouter(options));
 
   // Serve the Swagger documents and Swagger UI
-  //app.use(middleware.swaggerUi());
+  app.use(middleware.swaggerUi());
 
-  lex.listen([process.env.PORT || '3000'], process.env.SSL_PORT ? [process.env.SSL_PORT] : [443, 5001], function () {
-    var protocol = ('requestCert' in this) ? 'https': 'http';
-    console.log("Listening at " + protocol + '://localhost:' + this.address().port);
-    console.log("Docs available at " + protocol + '://localhost:' + this.address().port + '/docs');
+
+  // handles acme-challenge and redirects to https
+  http.createServer(lex.middleware(require('redirect-https')())).listen(process.env.PORT, function () {
+    console.log("Listening for ACME http-01 challenges on", this.address());
+  });
+
+  // handles your app
+  https.createServer(lex.httpsOptions, lex.middleware(app)).listen(process.env.SSL_PORT, function () {
+    console.log("Listening for ACME tls-sni-01 challenges and serve app on", this.address());
   });
 
 });
 
 
+
 /**
  * Normalize a port into a number, string, or false.
  */
-/*
+
 function normalizePort(val) {
   var port = parseInt(val, 10);
 
@@ -91,4 +99,3 @@ function normalizePort(val) {
 
   return false;
 }
-*/
