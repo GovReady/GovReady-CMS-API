@@ -66,10 +66,17 @@ swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
   app.use(middleware.swaggerUi());
 
 
-  // handles acme-challenge and redirects to https
-  http.createServer(lex.middleware(require('redirect-https')())).listen(process.env.PORT, function () {
-    console.log("Listening for ACME http-01 challenges on", this.address());
-  });
+  if (process.env.NODE_ENV === 'production') {
+    // handles acme-challenge and redirects to https
+    http.createServer(lex.middleware(require('redirect-https')())).listen(process.env.PORT, function () {
+      console.log("Listening for ACME http-01 challenges on", this.address());
+    })
+  } else {
+    http.createServer(app).listen(process.env.PORT, function () {
+      console.log("Listening for ACME http-01 challenges on", this.address());
+    });
+  }
+  
 
   // handles your app
   https.createServer(lex.httpsOptions, lex.middleware(app)).listen(process.env.SSL_PORT, function () {
