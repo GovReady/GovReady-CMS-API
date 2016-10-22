@@ -40,7 +40,7 @@ Commands to run to setup Ubuntu 14.04 server:
 ```
 # Install node via nvm
 apt-get update
-apt-get install git
+apt-get install git build-essential
 wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.31.0/install.sh | bash
 nvm install 5.0
 node -v
