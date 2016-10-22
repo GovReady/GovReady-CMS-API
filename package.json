@@ -49,6 +49,7 @@
     "spdy": "^3.3.3",
     "ssl-utils": "^0.3.0",
     "swagger-tools": "^0.10.1",
+    "swagger-ui": "^2.2.5",
     "tldjs": "^1.6.2",
     "underscore": "^1.8.3",
     "wappalyzer": "^2.0.4",
