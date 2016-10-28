@@ -188,16 +188,15 @@ exports.stack = function(site, cb) {
  * Ping site to check uptime status
  */
 exports.ping = function(site, cb) {
-  request(site.url, function (error, res, body) {
+  request({
+    url: site.url,
+    timeout: 500,
+   }, function (error, res, body) {
     // Website is up
     //console.log(res);
     //console.log(error);
 
-    if (typeof site.status !== 'object') {
-      site.status = {};
-    }
-
-    if (!error && res.statusCode === 200) {
+    if (typeof site.status === 'object' && !error && res.statusCode === 200) {
       site.status.ping = {
         datetime: new Date().toISOString(),
         status: true
