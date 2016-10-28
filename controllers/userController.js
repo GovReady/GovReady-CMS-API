@@ -218,7 +218,8 @@ exports.getSites = function(req, res) {
             site = sites[i];
             out.push({
               title: site.title ? site.title : site.url,
-              url: site.url
+              url: site.url,
+              siteId: site._id
             });
           }
 
