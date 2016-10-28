@@ -15,6 +15,7 @@ var fs = require('fs');
 var cmp = require('semver-compare');
 
 var helpers = require('../controllers/helpersController');
+var userController = require('../controllers/userController');
 
 /** 
  * Endpoint /sites/:siteID for GET
@@ -24,6 +25,42 @@ exports.getSite = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     return res.status(200).json(site);  
+  });
+
+} // function
+
+/** 
+ * Endpoint /sites for POST
+ */
+exports.postSite = function(req, res) {
+  // Create monogo Site            
+  var site = new Site({
+    url: req.body.url,
+    title: req.body.title ? req.body.title : req.body.url,
+    application: req.body.application ? req.body.application : 'standalone',
+    status: {}
+  });
+  site.save();
+  console.log('CREATED NEW SITE', site);
+
+  userController.addUserSite(req.user, site._id, function(user) {
+    console.log(user);
+    return res.status(200).json(site);
+  });
+  
+} // function
+
+
+/** 
+ * Endpoint /sites/:siteId for PATCH
+ */
+exports.patchSite = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+    
+    site.save();
+    return res.status(200).json({status: 'success'});  
   });
 
 } // function

@@ -72,16 +72,12 @@ paths:
       consumes:
         - application/json
         - application/xml
+        - application/x-www-form-urlencoded
       produces:
         - application/json
         - application/xml
-      parameters:
-        - in: body
-          name: body
-          description: Site object that needs to be added
-          required: false
-          schema:
-            $ref: "#/definitions/Site"
+        - application/x-www-form-urlencoded
+
       responses:
         "405":
           description: Invalid input

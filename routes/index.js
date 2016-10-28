@@ -37,12 +37,13 @@ router.route('/refresh-token')
 router.route('/user-site/:siteId')
   .post(helpers.jwtCheck, userController.postUserSite);
 
-
 router.route('/sites')
-  .get(helpers.jwtCheck, userController.getSites);
+  .get(helpers.jwtCheck, userController.getSites)
+  .post(helpers.jwtCheck, siteController.postSite);
 
 router.route('/sites/:siteId')
   .get(helpers.jwtCheck, siteController.getSite)
+  .patch(helpers.jwtCheck, siteController.patchSite)
   .delete(helpers.jwtCheck, siteController.deleteSite);
 
 router.route('/sites/:siteId/load/demo')

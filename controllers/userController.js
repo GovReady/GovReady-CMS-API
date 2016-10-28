@@ -164,38 +164,9 @@ exports.postRefreshToken = function(req, res) {
  * Endpoint /user-site for POST (anonymous endpoint)
  */
 exports.postUserSite = function(req, res) {
-  management
-    .users.get( { id: req.user.sub } )
-    .then(function (user) {
-      // Update the Auth0 Client
-      console.log(user);
-      var data = {
-        app_metadata: user.app_metadata ? user.app_metadata : {}
-      }
-      data.app_metadata.sites = user.app_metadata.sites ? user.app_metadata.sites : [];
-      
-      // Add the site to the user
-      if ( data.app_metadata.sites.indexOf(req.params.siteId) == -1 ) {
-        data.app_metadata.sites.push(req.params.siteId);
-
-        management
-          .users.update( { id: req.user.sub }, data )
-          .then(function (client) {
-            return res.status(200).json(user.app_metadata);
-          })
-          .catch(function (err) {
-            return res.status(500).json(err);
-          }); // auth0.users.update()
-
-      } // if
-      else {
-        return res.status(500).json('User already belongs to site');
-      }
-
-    })
-    .catch(function (err) {
-      return res.status(500).json(err);
-    }); // auth0.clients.get()
+  return exports.addUserSite(req.user, req.params.siteId, function(user) {
+    res.status(200).json(user.app_metadata);
+  });
 }
 
 
@@ -203,7 +174,6 @@ exports.postUserSite = function(req, res) {
  * Endpoint /sites for GET
  */
 exports.getSites = function(req, res) {
-  console.log(req.user);
 
   management
     .users.get( { id: req.user.sub } )
@@ -227,11 +197,89 @@ exports.getSites = function(req, res) {
 
         });
     });
+
+}
+
+
+/** 
+ * Helper function adds a user to a site in Auth0.
+ */
+exports.addUserSite = function(rUser, siteId, cb) {
+
+  management
+    .users.get( { id: rUser.sub } )
+    .then(function (user) {
+      // Update the Auth0 Client
+      var data = {
+        app_metadata: user.app_metadata ? user.app_metadata : {}
+      }
+      data.app_metadata.sites = user.app_metadata.sites ? user.app_metadata.sites : [];
       
+      // Add the site to the user
+      if ( data.app_metadata.sites.indexOf(siteId) == -1 ) {
+        data.app_metadata.sites.push(siteId);
+
+        management
+          .users.update( { id: rUser.sub }, data )
+          .then(function (client) {
+            return cb(user);
+          })
+          .catch(function (err) {
+            return res.status(500).json(err);
+          }); // auth0.users.update()
+
+      } // if
+      else {
+        return res.status(500).json('User already belongs to site');
+      }
+
+    })
+    .catch(function (err) {
+      return res.status(500).json(err);
+    }); // auth0.clients.get()
 
 } 
 
 
+/** 
+ * Helper function removes a user from a site in Auth0.
+ */
+exports.removeUserSite = function(user, site, cb) {
+
+  management
+    .users.get( { id: rUser.sub } )
+    .then(function (user) {
+      // Update the Auth0 Client
+      var data = {
+        app_metadata: user.app_metadata ? user.app_metadata : {}
+      }
+      data.app_metadata.sites = user.app_metadata.sites ? user.app_metadata.sites : [];
+      
+      // Add the site to the user
+      var index = data.app_metadata.sites.indexOf(siteId);
+      if ( index != -1 ) {
+        data.app_metadata.sites.splice(index, 1);
+
+        management
+          .users.update( { id: rUser.sub }, data )
+          .then(function (client) {
+            return cb(user);
+          })
+          .catch(function (err) {
+            return res.status(500).json(err);
+          }); // auth0.users.update()
+
+      } // if
+      else {
+        return res.status(500).json('User does not belong to site');
+      }
+
+    })
+    .catch(function (err) {
+      return res.status(500).json(err);
+    }); // auth0.clients.get()
+    
+}
 
 
 /** 
