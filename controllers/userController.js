@@ -114,7 +114,7 @@ var createSite = function(req, cb) {
     status: {}
   });
   site.save();
-  cb(site);
+  cb(null, ulsite);
 }
 
 
@@ -164,7 +164,7 @@ exports.postRefreshToken = function(req, res) {
  * Endpoint /user-site for POST (anonymous endpoint)
  */
 exports.postUserSite = function(req, res) {
-  return exports.addUserSite(req.user, req.params.siteId, function(user) {
+  return exports.addUserSite(req.user, req.params.siteId, function(err, user) {
     res.status(200).json(user.app_metadata);
   });
 }
@@ -222,20 +222,20 @@ exports.addUserSite = function(rUser, siteId, cb) {
         management
           .users.update( { id: rUser.sub }, data )
           .then(function (client) {
-            return cb(user);
+            return cb(null, user);
           })
           .catch(function (err) {
-            return res.status(500).json(err);
+            return cb(err, null);
           }); // auth0.users.update()
 
       } // if
       else {
-        return res.status(500).json('User already belongs to site');
+        return cb('User already belongs to site', null);
       }
 
     })
     .catch(function (err) {
-      return res.status(500).json(err);
+      return cb(err, null);
     }); // auth0.clients.get()
 
 } 
@@ -244,7 +244,7 @@ exports.addUserSite = function(rUser, siteId, cb) {
 /** 
  * Helper function removes a user from a site in Auth0.
  */
-exports.removeUserSite = function(user, site, cb) {
+exports.removeUserSite = function(rUser, siteId, cb) {
 
   management
     .users.get( { id: rUser.sub } )
@@ -255,10 +255,12 @@ exports.removeUserSite = function(user, site, cb) {
       }
       data.app_metadata.sites = user.app_metadata.sites ? user.app_metadata.sites : [];
       
-      // Add the site to the user
-      var index = data.app_metadata.sites.indexOf(siteId);
+      // Remove the site from the user
+      var index = data.app_metadata.sites.indexOf(String(siteId));
+      console.log('index', index, typeof siteId);
       if ( index != -1 ) {
         data.app_metadata.sites.splice(index, 1);
+        console.log(data);
 
         management
           .users.update( { id: rUser.sub }, data )
@@ -266,17 +268,20 @@ exports.removeUserSite = function(user, site, cb) {
             return cb(user);
           })
           .catch(function (err) {
-            return res.status(500).json(err);
+            console.log('err saving user');
+            return cb('Error saving user', null);
           }); // auth0.users.update()
 
       } // if
       else {
-        return res.status(500).json('User does not belong to site');
+        console.log('User does not belong to site');
+        return cb('User already belongs to site', null);
       }
 
     })
     .catch(function (err) {
-      return res.status(500).json(err);
+      console.log('MANAGEMENT ERR', err);
+      return cb(err, null);
     }); // auth0.clients.get()
     
 }

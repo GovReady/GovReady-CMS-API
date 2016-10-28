@@ -43,8 +43,10 @@ exports.postSite = function(req, res) {
   site.save();
   console.log('CREATED NEW SITE', site);
 
-  userController.addUserSite(req.user, site._id, function(user) {
-    console.log(user);
+  userController.addUserSite(req.user, site._id, function(err, user) {
+    if (err) {
+      return res.status(500).json(err);
+    }
     return res.status(200).json(site);
   });
   
@@ -58,9 +60,11 @@ exports.patchSite = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
-    
+
+    site = merge(site, req.body);
     site.save();
-    return res.status(200).json({status: 'success'});  
+    return res.status(200).json( site );
+
   });
 
 } // function
@@ -70,19 +74,32 @@ exports.patchSite = function(req, res) {
  * Endpoint /sites/:siteId for DELETE
  */
 exports.deleteSite = function(req, res) {
-
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
-    console.log(site);
+    console.log('DELETING SITE', site._id);
 
-    Contact.find({ siteId: req.params.siteId }).remove().exec();
-    Measure.find({ siteId: req.params.siteId }).remove().exec();
-    Submission.find({ siteId: req.params.siteId }).remove().exec();
-    Scan.find({ siteId: req.params.siteId }).remove().exec();
-    Site.findOne({ _id: req.params.siteId }).remove().exec();
+    Contact.find({ siteId: site._id }).remove().exec();
+    Measure.find({ siteId: site._id }).remove().exec();
+    Submission.find({ siteId: site._id }).remove().exec();
+    Scan.find({ siteId: site._id }).remove().exec();
+    Site.findOne({ _id: site._id }).remove().exec();
 
-    site.save();
-    return res.status(200).json({status: 'success'});  
+    userController.removeUserSite(req.user, site._id, function(err, user) {
+      if (err) {
+        return res.status(500).json(err);
+      }
+      return res.status(200).json({
+        status: 'success',
+        user: user
+      });  
+    })
+    
+  })
+  .else(function(err){
+    return res.status(403).json({
+      status: 'error',
+      error: err
+    });
   });
 
 } // function
