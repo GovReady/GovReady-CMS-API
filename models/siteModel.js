@@ -7,6 +7,7 @@ var SiteSchema   = new mongoose.Schema({
   userId: String,
   name: String,
   application: String,
+  otherApplication: String,
   slug: String,
   description: String,
   type: String,
