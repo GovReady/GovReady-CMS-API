@@ -75,17 +75,13 @@ exports.postInitialize = function(req, res) {
             .clients.update( { client_id: process.env.AUTH0_CLIENT_ID }, data )
             .then(function (client) {
 
-              createSite(req, function(site){
-                return res.status(200).json(site);
-              });
+              return res.status(200).json({success: true});
 
             })
             .catch(function (err) {
               
               // Likely the allowed_origins entry already exists, so we fail gracefully
-              createSite(req, function(site){
-                return res.status(200).json(site);
-              });
+              return res.status(200).json({success: true});
 
             }); // auth0.clients.update()
 
@@ -97,8 +93,8 @@ exports.postInitialize = function(req, res) {
 
     // No need to update cors, just create the mongo Site
     else {
-      createSite(req, function(site){
-        return res.status(200).json(site);
+      createSite(req, function(err, site){
+        return res.status(200).json({success: true});
       });
     }
   });
@@ -113,8 +109,11 @@ var createSite = function(req, cb) {
     application: req.body.application,
     status: {}
   });
-  site.save();
-  cb(null, ulsite);
+  site.save(function(err, site) {
+    console.log('ERROR SAVING SITE', err);
+    cb(err, site);
+  });
+  
 }
 
 
