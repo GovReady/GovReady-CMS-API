@@ -38,6 +38,7 @@ exports.postSite = function(req, res) {
     url: req.body.url,
     title: req.body.title ? req.body.title : req.body.url,
     application: req.body.application ? req.body.application : 'standalone',
+    otherApplication: req.body.otherApplication ? req.body.otherApplication : null,
     status: {}
   });
   site.save();

@@ -188,7 +188,9 @@ exports.getSites = function(req, res) {
             out.push({
               title: site.title ? site.title : site.url,
               url: site.url,
-              siteId: site._id
+              siteId: site._id,
+              application: application,
+              applicationOther: applicationOther ? applicationOther : null
             });
           }
 
