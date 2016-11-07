@@ -189,7 +189,7 @@ exports.getSites = function(req, res) {
               title: site.title ? site.title : site.url,
               url: site.url,
               siteId: site._id,
-              application: application,
+              application: application ? application : null,
               applicationOther: applicationOther ? applicationOther : null
             });
           }
