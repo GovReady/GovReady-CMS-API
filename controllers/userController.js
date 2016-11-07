@@ -189,8 +189,8 @@ exports.getSites = function(req, res) {
               title: site.title ? site.title : site.url,
               url: site.url,
               siteId: site._id,
-              application: application ? application : null,
-              applicationOther: applicationOther ? applicationOther : null
+              application: site.application ? site.application : null,
+              applicationOther: site.applicationOther ? site.applicationOther : null
             });
           }
 
