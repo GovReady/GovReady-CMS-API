@@ -44,7 +44,7 @@ exports.postSite = function(req, res) {
   site.save();
   console.log('CREATED NEW SITE', site);
 
-  userController.addUserSite(req.user, site._id, function(err, user) {
+  userController.addUserSite(req.user, site._id, 'administrator', function(err, user) {
     if (err) {
       return res.status(500).json(err);
     }

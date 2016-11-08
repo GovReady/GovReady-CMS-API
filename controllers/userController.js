@@ -163,7 +163,7 @@ exports.postRefreshToken = function(req, res) {
  * Endpoint /user-site for POST (anonymous endpoint)
  */
 exports.postUserSite = function(req, res) {
-  return exports.addUserSite(req.user, req.params.siteId, function(err, user) {
+  return exports.addUserSite(req.user, req.params.siteId, 'administrator', function(err, user) {
     res.status(200).json(user.app_metadata);
   });
 }
@@ -178,25 +178,40 @@ exports.getSites = function(req, res) {
     .users.get( { id: req.user.sub } )
     .then(function (user) {
       // Update the Auth0 Client
-      Site.find( { _id: { $in: user.app_metadata.sites } } )
+      var items = [];
+      var role, index;
+      for (var i in user.app_metadata.sites) {
+        items.push(user.app_metadata.sites[i].siteId);
+      }
+      Site.find( { _id: { $in: items } } )
         .then(function (sites) {
-          
           var out = [];
           var site;
           for (var i in sites) {
             site = sites[i];
+
+            index = user.app_metadata.sites.map(function(el) {
+              return el.siteId;
+            }).indexOf(String(site._id));
+
+            role = user.app_metadata.sites[index].role;
+
             out.push({
               title: site.title ? site.title : site.url,
               url: site.url,
               siteId: site._id,
               application: site.application ? site.application : null,
-              applicationOther: site.applicationOther ? site.applicationOther : null
+              applicationOther: site.applicationOther ? site.applicationOther : null,
+              role: role
             });
           }
 
           return res.status(200).json(out);  
 
         });
+        //.else(function (err) {
+        //  return res.status(200).json(out);console.log(err);
+        //});
     });
 
 }
@@ -205,7 +220,7 @@ exports.getSites = function(req, res) {
 /** 
  * Helper function adds a user to a site in Auth0.
  */
-exports.addUserSite = function(rUser, siteId, cb) {
+exports.addUserSite = function(rUser, siteId, role, cb) {
 
   management
     .users.get( { id: rUser.sub } )
@@ -217,8 +232,14 @@ exports.addUserSite = function(rUser, siteId, cb) {
       data.app_metadata.sites = user.app_metadata.sites ? user.app_metadata.sites : [];
       
       // Add the site to the user
-      if ( data.app_metadata.sites.indexOf(siteId) == -1 ) {
-        data.app_metadata.sites.push(siteId);
+      var index = data.app_metadata.sites.map(function(el) {
+        return el.siteId;
+      }).indexOf(siteId);
+      if ( index == -1 ) {
+        data.app_metadata.sites.push({
+          siteId: siteId,
+          role: role
+        });
 
         management
           .users.update( { id: rUser.sub }, data )
@@ -257,20 +278,23 @@ exports.removeUserSite = function(rUser, siteId, cb) {
       data.app_metadata.sites = user.app_metadata.sites ? user.app_metadata.sites : [];
       
       // Remove the site from the user
-      var index = data.app_metadata.sites.indexOf(String(siteId));
-      console.log('index', index, typeof siteId);
+      var index = data.app_metadata.sites.map(function(el) {
+        return el.siteId;
+      }).indexOf(String(siteId));
+      //console.log('index', index, typeof siteId);
       if ( index != -1 ) {
         data.app_metadata.sites.splice(index, 1);
-        console.log(data);
+        //console.log(data);
 
         management
           .users.update( { id: rUser.sub }, data )
           .then(function (client) {
-            return cb(user);
+            return cb(null, user);
           })
           .catch(function (err) {
-            console.log('err saving user');
-            return cb('Error saving user', null);
+            //console.log('err saving user', err);
+            //return cb('Error saving user', null);
+            return cb(err, user);
           }); // auth0.users.update()
 
       } // if
