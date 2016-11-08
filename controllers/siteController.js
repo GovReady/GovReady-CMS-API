@@ -16,6 +16,7 @@ var cmp = require('semver-compare');
 
 var helpers = require('../controllers/helpersController');
 var userController = require('../controllers/userController');
+var pluginController = require('../controllers/pluginController');
 
 /** 
  * Endpoint /sites/:siteID for GET
@@ -194,9 +195,16 @@ exports.postSitePlugins = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     site.plugins = req.body.plugins;
-    console.log('PLUGINS POST', site);
+    console.log('PLUGINS POST');
     site.save();
-    return res.status(200).json(site);  
+    pluginController.calculateSiteVulnerabilities(site, function(err, out) {
+      if (err) {
+        return res.status(500).json( err );
+      }
+      else {
+        return res.status(200).json( site );
+      }
+    });
   });
 
 } // function
