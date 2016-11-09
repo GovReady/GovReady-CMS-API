@@ -180,6 +180,9 @@ exports.getSites = function(req, res) {
       // Update the Auth0 Client
       var items = [];
       var role, index;
+      if (user.app_metadata == undefined || user.app_metadata.sites == undefined) {
+        return res.status(200).json([]);
+      }
       for (var i in user.app_metadata.sites) {
         items.push(user.app_metadata.sites[i].siteId);
       }
@@ -206,7 +209,7 @@ exports.getSites = function(req, res) {
             });
           }
 
-          return res.status(200).json(out);  
+          return res.status(200).json(out);
 
         });
         //.else(function (err) {
