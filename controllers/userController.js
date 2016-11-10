@@ -174,7 +174,7 @@ exports.postUserSite = function(req, res) {
 exports.getSites = function(req, res) {
   management
     .users.get( { id: req.user.sub } )
-    .then(function (user) {console.log(user);
+    .then(function (user) {
       // Update the Auth0 Client
       var items = [];
       var role, index;
@@ -228,14 +228,14 @@ exports.addUserSite = function(rUser, siteId, role, cb) {
     .then(function (user) {
       // Update the Auth0 Client
       var data = {
-        app_metadata: user.app_metadata ? user.app_metadata : {}
+        app_metadata: user.app_metadata != undefined ? user.app_metadata : {}
       }
-      data.app_metadata.sites = user.app_metadata.sites ? user.app_metadata.sites : [];
-      
+      data.app_metadata.sites = user.app_metadata != undefined && user.app_metadata.sites != undefined ? user.app_metadata.sites : [];
       // Add the site to the user
       var index = data.app_metadata.sites.map(function(el) {
         return el.siteId;
       }).indexOf(siteId);
+
       if ( index == -1 ) {
         data.app_metadata.sites.push({
           siteId: siteId,
@@ -245,9 +245,11 @@ exports.addUserSite = function(rUser, siteId, role, cb) {
         management
           .users.update( { id: rUser.sub }, data )
           .then(function (client) {
+            //console.log(client);
             return cb(null, user);
           })
           .catch(function (err) {
+            //console.log(err);
             return cb(err, null);
           }); // auth0.users.update()
 
@@ -274,18 +276,17 @@ exports.removeUserSite = function(rUser, siteId, cb) {
     .then(function (user) {
       // Update the Auth0 Client
       var data = {
-        app_metadata: user.app_metadata ? user.app_metadata : {}
+        app_metadata: user.app_metadata != undefined ? user.app_metadata : {}
       }
-      data.app_metadata.sites = user.app_metadata.sites ? user.app_metadata.sites : [];
+      data.app_metadata.sites = user.app_metadata != undefined && user.app_metadata.sites != undefined ? user.app_metadata.sites : [];
       
       // Remove the site from the user
       var index = data.app_metadata.sites.map(function(el) {
         return el.siteId;
       }).indexOf(String(siteId));
-      //console.log('index', index, typeof siteId);
+
       if ( index != -1 ) {
         data.app_metadata.sites.splice(index, 1);
-        //console.log(data);
 
         management
           .users.update( { id: rUser.sub }, data )
@@ -293,9 +294,8 @@ exports.removeUserSite = function(rUser, siteId, cb) {
             return cb(null, user);
           })
           .catch(function (err) {
-            //console.log('err saving user', err);
             //return cb('Error saving user', null);
-            return cb(err, user);
+            return cb(null, user);
           }); // auth0.users.update()
 
       } // if

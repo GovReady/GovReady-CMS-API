@@ -88,19 +88,19 @@ exports.deleteSite = function(req, res) {
 
     userController.removeUserSite(req.user, site._id, function(err, user) {
       if (err) {
-        return res.status(500).json(err);
+        return res.json(err);
       }
-      return res.status(200).json({
+      return res.json({
         status: 'success',
         user: user
       });  
     })
     
   })
-  .else(function(err){
+  .catch(function(err){
     return res.status(403).json({
       status: 'error',
-      error: err
+      error: 'Site not found'
     });
   });
 
