@@ -127,8 +127,7 @@ exports.postRefreshToken = function(req, res) {
     "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer", // @todo?
     'target': process.env.AUTH0_CLIENT_ID,
     'client_id': process.env.AUTH0_CLIENT_ID,
-    //"refresh_token": req.body.refresh_token,//was 'iI3KDzXwjD8fLy3MVJLXqveknV0y93XhomEMEmGeXBdMk'
-    'refresh_token': 'iI3KDzXwjD8fLy3MVJLXqveknV0y93XhomEMEmGeXBdMk',
+    "refresh_token": req.body.refresh_token,
     "api_type": "app",
     'scope': 'openid app_metadata'
   };
@@ -173,10 +172,9 @@ exports.postUserSite = function(req, res) {
  * Endpoint /sites for GET
  */
 exports.getSites = function(req, res) {
-
   management
     .users.get( { id: req.user.sub } )
-    .then(function (user) {
+    .then(function (user) {console.log(user);
       // Update the Auth0 Client
       var items = [];
       var role, index;
