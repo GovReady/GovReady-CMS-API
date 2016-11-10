@@ -167,7 +167,6 @@ exports.calculateSiteVulnerabilities = function(site, cb) {
     }
     out.forEach(function(item, i) {
       var key = item.core || item.platform == item.name ? 'core' : 'plugins';
-      console.log(key);
       rtn[key].push(item);
     });
     return cb(null, rtn);
@@ -213,7 +212,7 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
         fetched: Date.now()
       });
       plugin.save();
-      err = body;
+      err = null;//body;
       data = null;
     }
     cb(err, data);
