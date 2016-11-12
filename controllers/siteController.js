@@ -38,7 +38,7 @@ exports.postSite = function(req, res) {
   var site = new Site({
     url: req.body.url,
     title: req.body.title ? req.body.title : req.body.url,
-    application: req.body.application ? req.body.application : 'standalone',
+    application: req.body.application ? req.body.application : null,
     otherApplication: req.body.otherApplication ? req.body.otherApplication : null,
     status: {}
   });
