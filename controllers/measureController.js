@@ -82,14 +82,14 @@ exports.postSiteMeasuresLoad = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
 
-    //console.log('/../data/measures-' + req.params.measureStack + '.yml');
+    console.log('/../data/measures-' + req.params.measureStack + '.yml');
 
     try {
       var doc = yaml.safeLoad(fs.readFileSync(__dirname + '/../data/measures-' + req.params.measureStack + '.yml', 'utf8'));
 
       var measures = [];
       doc.forEach(function(item, i) {
-
+      
         // Set some values
         item.frequency = parseInt(item.frequency);
         item.siteId = req.params.siteId;
@@ -101,17 +101,28 @@ exports.postSiteMeasuresLoad = function(req, res) {
         measure.save();
         measures.push(measure);
 
+        // Deal with submissions that should be added (demo content)
+        if (item.submissions != undefined) {
+          item.submissions.forEach(function(submission, s) {
+            submission.siteId = req.params.siteId;
+            submission.measureId = measure._id;
+            var submissionElement = new Submission(submission);
+            submissionElement.save();
+          });
+        }
+
       }); // forEach
 
-      return res.status(200).json(measures);
+      if (res != undefined) {
+        return res.status(200).json(measures);
+      }
+      console.log('Imported '+measures.length+' measures');
+      return measures;
 
     } catch (e) {
       return res.status(500).json({ err: 'Measure stack '+ req.params.measureStack +' not found.' });
     }
 
-/*
-    
-*/
     //return res.status(200).json(measure);  
   });
   //return res.status(500).json({ err: 'No site found' });  

@@ -5,8 +5,9 @@ var encrypt = require('mongoose-encryption');
 // Define our beer schema
 var SiteSchema   = new mongoose.Schema({
   userId: String,
-  name: String,
+  title: String,
   application: String,
+  otherApplication: String,
   slug: String,
   description: String,
   type: String,

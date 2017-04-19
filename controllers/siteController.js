@@ -2,6 +2,10 @@
 var User = require('../models/userModel');
 var Site = require('../models/siteModel');
 var Plugin = require('../models/pluginModel');
+var Contact = require('../models/contactModel');
+var Measure = require('../models/measureModel');
+var Submission = require('../models/submissionModel');
+var Scan = require('../models/scanModel');
 var request = require('request');
 var jwt = require('jsonwebtoken');
 var crypto = require("crypto");
@@ -11,6 +15,8 @@ var fs = require('fs');
 var cmp = require('semver-compare');
 
 var helpers = require('../controllers/helpersController');
+var userController = require('../controllers/userController');
+var pluginController = require('../controllers/pluginController');
 
 /** 
  * Endpoint /sites/:siteID for GET
@@ -24,23 +30,103 @@ exports.getSite = function(req, res) {
 
 } // function
 
+/** 
+ * Endpoint /sites for POST
+ */
+exports.postSite = function(req, res) {
+  // Create monogo Site            
+  var site = new Site({
+    url: req.body.url,
+    title: req.body.title ? req.body.title : req.body.url,
+    application: req.body.application ? req.body.application : null,
+    otherApplication: req.body.otherApplication ? req.body.otherApplication : null,
+    status: {}
+  });
+  site.save();
+  console.log('CREATED NEW SITE', site);
+
+  userController.addUserSite(req.user, site._id, 'administrator', function(err, user) {
+    if (err) {
+      return res.status(500).json(err);
+    }
+    return res.status(200).json(site);
+  });
+  
+} // function
+
+
+/** 
+ * Endpoint /sites/:siteId for PATCH
+ */
+exports.patchSite = function(req, res) {
+
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+
+    site = merge(site, req.body);
+    site.save();
+    return res.status(200).json( site );
+
+  });
+
+} // function
+
 
 /** 
  * Endpoint /sites/:siteId for DELETE
  */
 exports.deleteSite = function(req, res) {
+  Site.findOne( { _id: req.params.siteId } )
+  .then(function (site) {
+    console.log('DELETING SITE', site._id);
+
+    Contact.find({ siteId: site._id }).remove().exec();
+    Measure.find({ siteId: site._id }).remove().exec();
+    Submission.find({ siteId: site._id }).remove().exec();
+    Scan.find({ siteId: site._id }).remove().exec();
+    Site.findOne({ _id: site._id }).remove().exec();
+
+    userController.removeUserSite(req.user, site._id, function(err, user) {
+      if (err) {
+        return res.json(err);
+      }
+      return res.json({
+        status: 'success',
+        user: user
+      });  
+    })
+    
+  })
+  .catch(function(err){
+    return res.status(403).json({
+      status: 'error',
+      error: 'Site not found'
+    });
+  });
+
+} // function
+
+/** 
+ * Endpoint /sites/:siteId/load/demo for POST
+ */
+exports.loadDemoSite = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
-    console.log(site);
+   
+    // Delete old associated Documents
+    Contact.find({ siteId: req.params.siteId }).remove().exec();
+    Measure.find({ siteId: req.params.siteId }).remove().exec();
+    Submission.find({ siteId: req.params.siteId }).remove().exec();
+    Scan.find({ siteId: req.params.siteId }).remove().exec();
 
-    //Contact.find({ siteId: req.params.siteId }).remove();
-    //Measure.find({ siteId: req.params.siteId }).remove();
-    //Submission.find({ siteId: req.params.siteId }).remove();
-    //Scan.find({ siteId: req.params.siteId }).remove();
-    Site.findOne({ _id: req.params.siteId }).remove();
+    // Load in demo content
+    var measureController = require('../controllers/measureController');
+    var contactController = require('../controllers/contactController');
+    req.params.measureStack = req.params.contactStack = 'demo';
+    measureController.postSiteMeasuresLoad(req);
+    contactController.postSiteContactsLoad(req);
 
-    site.save();
     return res.status(200).json({status: 'success'});  
   });
 
@@ -109,9 +195,16 @@ exports.postSitePlugins = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     site.plugins = req.body.plugins;
-    console.log('PLUGINS POST', site);
+    console.log('PLUGINS POST');
     site.save();
-    return res.status(200).json(site);  
+    pluginController.calculateSiteVulnerabilities(site, function(err, out) {
+      if (err) {
+        return res.status(500).json( err );
+      }
+      else {
+        return res.status(200).json( site );
+      }
+    });
   });
 
 } // function
@@ -169,11 +262,12 @@ exports.getSitePlugins = function(req, res) {
     Plugin.find( {name: {$in: names}, platform: platform } )
     .then(function (dbPlugins) {
       //console.log(dbPlugins);
-      dbPlugins.forEach(function(item, i) {
+      for (var i = 0, len = dbPlugins.length; i < len; i++) {
+        var item = dbPlugins[i];
 
         // See if updates are available
         //plugin.latest_version = item.latest_version != undefined ? item.latest_version : null;
-        if ( item.latest_version && cmp(item.latest_version, plugins[item.name].version) > 0 ) {
+        if ( plugins[item.name].version != null && item.latest_version && cmp(item.latest_version, plugins[item.name].version) > 0 ) {
           plugins[item.name].updates = true;
           //plugin.latest_version = item.latest_version;
 
@@ -192,9 +286,9 @@ exports.getSitePlugins = function(req, res) {
         else {
           plugins[item.name].updates = false;
         }
+        //console.log('asd', i, len, item);
 
-      });
-      //console.log('plugins', plugins);
+      }
 
       // Rekey plugins Object as Array
       var out = {

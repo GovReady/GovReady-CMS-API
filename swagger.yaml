@@ -72,16 +72,12 @@ paths:
       consumes:
         - application/json
         - application/xml
+        - application/x-www-form-urlencoded
       produces:
         - application/json
         - application/xml
-      parameters:
-        - in: body
-          name: body
-          description: Site object that needs to be added
-          required: false
-          schema:
-            $ref: "#/definitions/Site"
+        - application/x-www-form-urlencoded
+
       responses:
         "405":
           description: Invalid input
@@ -145,7 +141,6 @@ paths:
         "400":
           description: Invalid ID supplied
       security:
-        - api_key: []
         - govready_auth:
           - write_sites
           - read_sites
@@ -193,11 +188,6 @@ paths:
         - application/json
         - application/xml
       parameters:
-        - in: header
-          name: api_key
-          description: ""
-          required: true
-          type: string
         - in: path
           name: siteId
           description: site id to delete
@@ -284,11 +274,6 @@ paths:
         - application/json
         - application/xml
       parameters:
-        - in: header
-          name: api_key
-          description: ""
-          required: true
-          type: string
         - in: path
           name: siteId
           description: site id of stack to delete
@@ -375,11 +360,6 @@ paths:
         - application/json
         - application/xml
       parameters:
-        - in: header
-          name: api_key
-          description: ""
-          required: true
-          type: string
         - in: path
           name: siteId
           description: site id of plugin to delete

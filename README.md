@@ -36,3 +36,38 @@ http://editor.swagger.io/#/?import=https://raw.githubusercontent.com/GovReady/Go
 Depending on your network setup and security requirements, you may prefer to run the GovReady API locally rather than connecting to 
 our servers.  For more information about installation and configuration, 
 [read our wiki documentation](https://github.com/GovReady/GovReady-CMS-API/wiki/Running-the-GovReady-API-locally-or-on-an-intranet).
+
+Copy the `.env` file.  Then run with forever:
+```
+sudo forever -w ./bin/www 
+```
+
+Commands to run to setup Ubuntu 14.04 server:
+```
+# Install node via nvm
+apt-get update
+apt-get install git build-essential
+wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.31.0/install.sh | bash
+nvm install 6
+node -v
+npm install -g forever
+
+# Install python (for Let's Encrypt)
+apt-get install python
+
+# Install RabbitMQ
+echo 'deb http://www.rabbitmq.com/debian/ testing main' |
+        sudo tee /etc/apt/sources.list.d/rabbitmq.list
+wget -O- https://www.rabbitmq.com/rabbitmq-signing-key-public.asc |
+        sudo apt-key add -
+sudo apt-get update
+sudo apt-get install rabbitmq-server    
+
+# Install and run GovReady-CMS-API
+cd /var/local
+git clone https://github.com/GovReady/GovReady-CMS-API.git
+cd GovReady-CMS-API
+nano .env
+npm install
+forever -w ./bin/www 
+```
