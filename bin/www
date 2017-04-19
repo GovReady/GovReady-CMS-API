@@ -32,8 +32,8 @@ var lex = LEX.create({
   approveDomains: [ process.env.SSL_DOMAIN ],
   email: process.env.SSL_EMAIL,
   agreeTos: true,
-  renewWithin: 30
-  //renewBy: 30
+  renewWithin: 3,
+  renewBy: 30
 });
 
 
