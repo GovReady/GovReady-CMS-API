@@ -148,7 +148,7 @@ exports.calculateSiteVulnerabilities = function(site, cb) {
           plugin.vulnerabilities.forEach(function(vulnerability, j) {
             //item.version = '0.0.0'; // @todo: this is for testing only!!!
             console.log('FIXED IN', vulnerability.fixed_in, item.version);
-            if ( item.version != null && vulnerability.fixed_in != null && cmp(vulnerability.fixed_in, item.version) > 0 ) {
+            if ( item.version && vulnerability.fixed_in && cmp(vulnerability.fixed_in, item.version) > 0 ) {
               vulnerabilities.push(vulnerability);
             }
           });
