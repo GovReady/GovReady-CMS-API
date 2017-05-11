@@ -199,7 +199,9 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
       if (key != name) {
         data.application = 'wordpress';
         data.type = 'application';
-        data.latest_version = data.vulnerabilities[data.vulnerabilities.length-1].fixed_in;
+        if(data.vulnerabilities && data.vulnerabilities[data.vulnerabilities.length-1]) {
+          data.latest_version = data.vulnerabilities[data.vulnerabilities.length-1].fixed_in;
+        }
       }
       plugin = new Plugin(data);
       plugin.save();
