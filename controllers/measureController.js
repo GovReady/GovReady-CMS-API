@@ -16,10 +16,14 @@ var helpers = require('../controllers/helpersController');
 
 
 /** 
- * Endpoint /sites/:siteId/measures for GET
+ * Endpoint /sites/:siteId/measures?limitgit  for GET
  */
 exports.getSiteMeasures = function(req, res) {
+
+  var limit = req.query.limit && req.query.limit < 100 ? req.query.limit : 100;
+
   Site.findOne( { _id: req.params.siteId } )
+  .limit(limit)
   .then(function (site) {
     
     Measure.find( { siteId: req.params.siteId } )
@@ -174,16 +178,18 @@ exports.patchSiteMeasure = function(req, res) {
 
 
 /** 
- * Endpoint /sites/:siteId/submissions for GET
+ * Endpoint /sites/:siteId/submissions?limit for GET
  */
 exports.getSiteSubmissions = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
-    
+
+    var limit = req.query.limit && req.query.limit < 100 ? req.query.limit : 20;
+
     Submission.find( { siteId: req.params.siteId } )
-    .sort([['datetime', 'descending']])
-    .limit(20)
+    .sort([['datetime', -1]])
+    .limit(limit)
     .then(function (submissions) {
       var ids = [];
       submissions.forEach(function(item, i) {
@@ -213,7 +219,7 @@ exports.getSiteSubmissions = function(req, res) {
 
 
 /** 
- * Endpoint /sites/:siteId/measures/:measureId/submissions for GET
+ * Endpoint /sites/:siteId/measures/:measureId/submissions?limit for GET
  */
 exports.getSiteMeasuresSubmissions = function(req, res) {
 
@@ -223,9 +229,13 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
     Measure.findOne( { _id: req.params.measureId } )
     .then(function (measure) {
 
+      var limit = req.query.limit && req.query.limit < 100 ? req.query.limit : 100;
+
       Submission.find( { measureId: req.params.measureId } )
+      .sort([['datetime', -1]])
+      .limit(limit)
       .then(function (submissions) {
-        return res.status(200).json(submissions);  
+        return res.status(200).json(submissions);
       });
 
       return res.status(200).json(submission);  
