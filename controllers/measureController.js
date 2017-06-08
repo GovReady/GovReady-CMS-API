@@ -230,16 +230,16 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
     Measure.findOne( { _id: req.params.measureId } )
     .then(function (measure) {
 
-      console.log(measure);
-
       var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit) : 100;
-
+      console.log(measure);
       Submission.find( { measureId: req.params.measureId } )
       .sort([['datetime', -1]])
       .limit(limit)
       .then(function (submissions) {
         submissions.forEach(function(s, i) {
           submissions[i].title = measure.title;
+          console.log(measure.title);
+          console.log(submissions[i]);
         });
         return res.status(200).json(submissions);
       });
