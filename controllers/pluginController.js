@@ -147,8 +147,8 @@ exports.calculateSiteVulnerabilities = function(site, cb) {
           item = item[0];
           plugin.vulnerabilities.forEach(function(vulnerability, j) {
             //item.version = '0.0.0'; // @todo: this is for testing only!!!
-            //console.log(vulnerability, vulnerability.fixed_in, item.version);
-            if ( vulnerability.fixed_in != null && cmp(vulnerability.fixed_in, item.version) > 0 ) {
+            console.log('FIXED IN', vulnerability.fixed_in, item.version);
+            if ( item.version && vulnerability.fixed_in && cmp(vulnerability.fixed_in, item.version) > 0 ) {
               vulnerabilities.push(vulnerability);
             }
           });
@@ -199,7 +199,9 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
       if (key != name) {
         data.application = 'wordpress';
         data.type = 'application';
-        data.latest_version = data.vulnerabilities[data.vulnerabilities.length-1].fixed_in;
+        if(data.vulnerabilities && data.vulnerabilities[data.vulnerabilities.length-1]) {
+          data.latest_version = data.vulnerabilities[data.vulnerabilities.length-1].fixed_in;
+        }
       }
       plugin = new Plugin(data);
       plugin.save();

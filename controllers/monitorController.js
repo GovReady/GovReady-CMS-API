@@ -262,8 +262,8 @@ exports.ssl = function(site, cb) {
     site.domain.ssl = {
       allowed: true,
       forced: false,
-      expires: new Date(cert.valid_to).toISOString(),
-      created: new Date(cert.valid_from).toISOString(),
+      //expires: new Date(cert.valid_to).toISOString(),
+      //created: new Date(cert.valid_from).toISOString(),
       cert: cert
     };
 
