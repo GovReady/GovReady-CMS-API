@@ -236,15 +236,11 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
       .sort([['datetime', -1]])
       .limit(limit)
       .then(function (submissions) {
-        if(!submissions || !submissions.length) {
-          res.status(200).json([]);
-        }
-        return res.status(200).json(submissions.map(function(s) {
-          submission = s.toObject();
-          submission['title'] = measure.title;
-          console.log(submission);
-          return submission;
-        }));
+        submissions.forEach(function(s, i) {
+          submissions[i] = submissions[i].toObject();
+          submissions[i].title = measure.title;
+        });
+        return res.status(200).json(submissions);
       });
 
       return res.status(200).json(submission);  
