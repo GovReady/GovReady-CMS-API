@@ -230,6 +230,8 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
     Measure.findOne( { _id: req.params.measureId } )
     .then(function (measure) {
 
+      console.log(measure);
+
       var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit) : 100;
 
       Submission.find( { measureId: req.params.measureId } )
