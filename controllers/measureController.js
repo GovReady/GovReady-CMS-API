@@ -236,12 +236,14 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
       .sort([['datetime', -1]])
       .limit(limit)
       .then(function (submissions) {
-        submissions.forEach(function(s, i) {
-          submissions[i].title = measure.title;
-          console.log(measure.title);
-          console.log(submissions[i]);
-        });
-        return res.status(200).json(submissions);
+        if(!submissions || !submissions.length) {
+          res.status(200).json([]);
+        }
+        return res.status(200).json(submissions.map(function(submission) {
+          submission.title = measure.title;
+          console.log(submission);
+          return submission;
+        }));
       });
 
       return res.status(200).json(submission);  
