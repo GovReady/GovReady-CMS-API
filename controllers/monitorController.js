@@ -154,9 +154,20 @@ exports.trigger = function(site, key, endpoint, cb) {
   request(data, function (error, res, body) {
     if (!error && res.statusCode === 200) {
       console.log(body);
+      site.status[key] = {
+        datetime: new Date().toISOString(),
+        status: true
+      }
+      site.save();
       cb(null, body);
     }
     else {
+      site.status[key] = {
+        datetime: new Date().toISOString(),
+        status: false,
+        message: error
+      }
+      site.save();
       cb(error, null);
     }
   });
@@ -237,10 +248,23 @@ exports.domain = function(site, cb) {
     function(cb) {
       exports.wappalyzer(site, cb);
     }
-  ], function(err, results){
-    site = merge( merge(results[0], results[1]), results[2] );
+  ], function(error, results){
+    if (!error) {
+      site = merge(merge(results[0], results[1]), results[2]);
+      site.status.domain = {
+        datetime: new Date().toISOString(),
+        status: true
+      }
+    } else {
+      site.status.domain = {
+        datetime: new Date().toISOString(),
+        status: false,
+        message: error
+      }
+    }
     site.save();
     cb(err, site);
+
   }); // async
 
 }
@@ -281,6 +305,11 @@ exports.ssl = function(site, cb) {
   req.on('error', function(err) {
     console.log('err');
     site.domain.ssl = { allowed: false };
+    site.status.ssl = {
+      datetime: new Date().toISOString(),
+      status: false,
+      message: err
+    }
     return cb(null, site);
   });
 
@@ -289,6 +318,10 @@ exports.ssl = function(site, cb) {
     socket.on('timeout', function() {
       console.log('timeout);10');
       site.domain.ssl = { allowed: false };
+      site.status.domain = {
+        datetime: new Date().toISOString(),
+        status: true
+      }
       return cb(null, site);
     });
   });
@@ -321,9 +354,19 @@ exports.whois = function(site, cb) {
       else {
         console.log('COULD NOT REGEX DOMAIN EXPIRATION DATE', data);
       }
+      site.status.whois = {
+        datetime: new Date().toISOString(),
+        status: true
+      }
       return cb(null, site);
     }
     else {
+      site.status.whois = {
+        datetime: new Date().toISOString(),
+        status: false,
+        message: err
+      }
+      site.save();
       console.log('WHOIS ERR', err);
       return cb(err, null);
     }
