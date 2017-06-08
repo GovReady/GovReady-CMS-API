@@ -239,8 +239,9 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
         if(!submissions || !submissions.length) {
           res.status(200).json([]);
         }
-        return res.status(200).json(submissions.map(function(submission) {
-          submission.title = measure.title;
+        return res.status(200).json(submissions.map(function(s) {
+          submission = s.toObject();
+          submission['title'] = measure.title;
           console.log(submission);
           return submission;
         }));
