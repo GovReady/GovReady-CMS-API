@@ -20,7 +20,7 @@ var helpers = require('../controllers/helpersController');
  */
 exports.getSiteMeasures = function(req, res) {
 
-  var limit = req.query.limit && req.query.limit < 100 ? req.query.limit : 100;
+  var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit) : 100;
 
   Site.findOne( { _id: req.params.siteId } )
   .limit(limit)
@@ -185,7 +185,8 @@ exports.getSiteSubmissions = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
 
-    var limit = req.query.limit && req.query.limit < 100 ? req.query.limit : 20;
+    var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit): 20;
+    console.log('LIMIT'+limit);
 
     Submission.find( { siteId: req.params.siteId } )
     .sort([['datetime', -1]])
@@ -229,7 +230,7 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
     Measure.findOne( { _id: req.params.measureId } )
     .then(function (measure) {
 
-      var limit = req.query.limit && req.query.limit < 100 ? req.query.limit : 100;
+      var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit) : 100;
 
       Submission.find( { measureId: req.params.measureId } )
       .sort([['datetime', -1]])
