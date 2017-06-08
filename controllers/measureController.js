@@ -236,6 +236,9 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
       .sort([['datetime', -1]])
       .limit(limit)
       .then(function (submissions) {
+        submissions.forEach(function(s, i) {
+          submissions[i].title = measure.title;
+        });
         return res.status(200).json(submissions);
       });
 
