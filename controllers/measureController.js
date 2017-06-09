@@ -284,9 +284,9 @@ exports.postSiteMeasuresSubmission = function(req, res) {
       measure.datetime = new Date();
       measure.due = measure.datetime;
       measure.due = measure.due.setSeconds(measure.due.getSeconds() + measure.frequency);
-      measure.save();
-
-      return res.status(200).json(submission);  
+      measure.save().then(function() {
+        return res.status(200).json(submission);
+      });      
     });
 
   });
