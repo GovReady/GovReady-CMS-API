@@ -9,13 +9,14 @@ var mongoose = require('mongoose'),
 
 // Define our beer schema
 var SubmissionSchema = new mongoose.Schema({
-  siteId: ObjectId,
+  siteId: ObjectId, 
   measureId: ObjectId,
   userId: ObjectId,
-  name: String,
+  name: String, // Name of completer
   datetime: Date,
   body: String,
-  data: Object
+  data: Object,
+  title: String // Title of measure
 });
 
 SubmissionSchema.plugin(encrypt, { encryptionKey: process.env.DB_ENC_KEY, signingKey: process.env.DB_SIG_KEY, excludeFromEncryption: ['siteId', 'measureId'] });

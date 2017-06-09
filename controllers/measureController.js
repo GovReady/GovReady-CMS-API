@@ -110,6 +110,10 @@ exports.postSiteMeasuresLoad = function(req, res) {
           item.submissions.forEach(function(submission, s) {
             submission.siteId = req.params.siteId;
             submission.measureId = measure._id;
+            // @TODO remove this since we're now saving to submission
+            if(!submission.title) {
+              submission.title = measure.title;
+            }
             var submissionElement = new Submission(submission);
             submissionElement.save();
           });
@@ -199,10 +203,10 @@ exports.getSiteSubmissions = function(req, res) {
 
       Measure.find( { _id: { $in: ids } } )
       .then(function (measures) {
-
+        // @TODO remove this since we're now saving to submission
         submissions.forEach(function(s, i) {
           measures.forEach(function(m, j) {
-            if ( m._id.equals(s.measureId) ) {
+            if ( m._id.equals(s.measureId) && !submissions[i].title ) {
               submissions[i] = submissions[i].toObject();
               submissions[i].title = m.title;
             }
@@ -231,14 +235,16 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
     .then(function (measure) {
 
       var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit) : 100;
-      console.log(measure);
       Submission.find( { measureId: req.params.measureId } )
       .sort([['datetime', -1]])
       .limit(limit)
       .then(function (submissions) {
+        // @TODO remove this since we're now saving to submission
         submissions.forEach(function(s, i) {
-          submissions[i] = submissions[i].toObject();
-          submissions[i].title = measure.title;
+          if(!submissions[i].title) {
+            submissions[i] = submissions[i].toObject();
+            submissions[i].title = measure.title;
+          }
         });
         return res.status(200).json(submissions);
       });
@@ -269,6 +275,7 @@ exports.postSiteMeasuresSubmission = function(req, res) {
         name: req.body.name,
         body: req.body.body,
         //data: {},
+        title: measure.title,
         datetime: new Date()
       });
       submission.save();
