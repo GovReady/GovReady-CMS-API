@@ -327,7 +327,10 @@ exports.postSiteStack = function(req, res) {
     console.log('NEW STACK', req.body.stack);
     site.stack = req.body.stack;
     console.log('NEW SITE', site);
-    site.save();
+    site.save(function (err) {
+      if (err) console.log('ERROR!!!', err);
+      // saved!
+    });
 
     return res.status(200).json(site);
   });
