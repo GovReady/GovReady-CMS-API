@@ -152,6 +152,7 @@ exports.trigger = function(site, key, endpoint, cb) {
   };
   console.log('CALLING SITE TRIGGER: ', data);
   request(data, function (error, res, body) {
+    console.log('RESPONSE FROM TRIGGER: ', res);
     if (!error && res.statusCode === 200) {
       console.log(body);
       site.status[key] = {
