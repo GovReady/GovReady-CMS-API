@@ -324,8 +324,9 @@ exports.postSiteStack = function(req, res) {
     //  site.stack.database = 'Mysql ' + phpinfo.mysql['Client API version'];
     //}
     // @todo: mariadb...
-  
+    console.log('NEW STACK', req.body.stack);
     site.stack = req.body.stack;
+    console.log('NEW SITE', site);
     site.save();
 
     return res.status(200).json(site);
