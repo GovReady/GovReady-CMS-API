@@ -162,6 +162,7 @@ exports.trigger = function(site, key, endpoint, cb) {
       cb(null, body);
     }
     else {
+      console.log('ERROR IN SITE TRIGGER CALLBACK: status: '+res.statusCode, error, body);
       site.status[key] = {
         datetime: new Date().toISOString(),
         status: false,
