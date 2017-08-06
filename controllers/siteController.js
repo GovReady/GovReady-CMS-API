@@ -327,6 +327,7 @@ exports.postSiteStack = function(req, res) {
     console.log('NEW STACK', req.body.stack);
     site.stack = req.body.stack;
     console.log('NEW SITE', site);
+    site = new Site(site);
     site.save(function (err, doc, success) {
       console.log('ERROR!!!', err, doc, success);
       // saved!
