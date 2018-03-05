@@ -42,6 +42,12 @@ Copy the `.env` file.  Then run with forever:
 sudo forever -w ./bin/www 
 ```
 
+Alterntive starting command
+```
+cd path/to/repo
+forever start ./bin/www
+```
+
 Commands to run to setup Ubuntu 14.04 server:
 ```
 # Install node via nvm
