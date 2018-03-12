@@ -105,6 +105,17 @@ exports.siteApplication = function(site) {
   return '';
 }
 
+exports.updateSite = function(siteId, update, done) {
+  // @TODO errors?
+  Site.findOne( { _id: siteId } )
+    .then(function (site) {
+      // Allow updates
+      update(site);
+      // Save and callback
+      site.save(done);
+    });
+}
+
 // Find a site by id (or url)
 exports.findSite = function(req, callback) {
   var query = {};//{userId: req.user._id};
@@ -130,7 +141,6 @@ exports.findSite = function(req, callback) {
   });
   
 }
-
 
 // Endpoint /site/{siteId}/posts for GET
 // @todo: this is only temp, delete

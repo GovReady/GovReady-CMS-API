@@ -151,35 +151,28 @@ exports.trigger = function(site, key, endpoint, cb) {
     }
   };
   console.log('CALLING SITE TRIGGER: ', data);
-  request(data, function (error, res, body) {
-    if (!error && res.statusCode === 200) {
-      console.log('\n\n\n----------------');
-      console.log('trigger request done');
-      site.status[key] = {
-        datetime: new Date().toISOString(),
-        status: true
+  request(data, function (triggError, res, body) {
+    var requestFailed = triggError || res.statusCode !== 200;
+    helpers.updateSite(
+      site._id,
+      // Set
+      function(newSite) {
+        newSite.status[key] = {
+          datetime: new Date().toISOString(),
+          status: true
+        };
+        if (requestFailed) {
+          newSite.status[key] = false;
+          newSite.status[key] = triggerError;
+        }
+      },
+      // Done
+      function(saveError, doc, success) {
+        // @todo: send emails?
+        var response = requestFailed ? null : body;
+        cb(triggError, response);
       }
-      console.log(site.status[key]);
-      console.log('----------------\n\n\n');
-      site.save(function() {
-        console.log('\n\n\n----------------');
-        console.log(body);
-        console.log('trigger now saving the site');
-        cb(null, body);
-        console.log('----------------\n\n\n');
-      });
-    }
-    else {
-      console.log('ERROR IN SITE TRIGGER CALLBACK: status: '+res.statusCode, error, body);
-      site.status[key] = {
-        datetime: new Date().toISOString(),
-        status: false,
-        message: error
-      }
-      site.save(function() {
-        cb(error, null);
-      });
-    }
+    );
   });
 }
 
@@ -212,36 +205,38 @@ exports.ping = function(site, cb) {
   request({
     url: site.url,
     timeout: 500,
-   }, function (error, res, body) {
+   }, function (pingError, res, body) {
     // Website is up
     //console.log(res);
-    //console.log(error);
+    //console.log(pingError);
 
-    if (typeof site.status === 'object' && !error && res.statusCode === 200) {
-      site.status.ping = {
-        datetime: new Date().toISOString(),
-        status: true
-      }
-      site.save(function() {
-        cb(null, res.statusCode);
-      });
-
+    var msg;
+    if (typeof site.status === 'object' && !pingError && res.statusCode === 200) {
+      msg = null;
+    } else {
+      msg = pingError ? 'error' : 'unknown';
     }
-    // No error but website not ok
-    //else if (!error) {}
-    // Loading error
-    else {
-      var msg = error ? 'error' : 'unknown';
-      site.status.ping = {
-        datetime: new Date().toISOString(),
-        status: false,
-        message: msg
-      }
-      site.save(function() {
+
+    helpers.updateSite(
+      site._id,
+      // Set
+      function(newSite) {
+        newSite.status.ping = {
+          datetime: new Date().toISOString(),
+          status: true
+        };
+        if (asyncError) {
+          newSite.status.ping.status = false;
+          newSite.status.ping.message = msg;
+        }
+      },
+      // Done
+      function(saveError, doc, success) {
         // @todo: send emails?
-        cb(msg, null);
-      });
-    }
+        var response = msg ? null : res.statusCode;
+        cb(msg, response);
+      }
+    );
   });
 }
 
@@ -250,6 +245,8 @@ exports.ping = function(site, cb) {
  * Check domain name expiration, ssl status
  */
 exports.domain = function(site, parentCallback) {
+  var parsed = url.parse(site.url);
+  var domain = tld.getDomain(site.url);
 
   async.parallel([
     function(cb) {
@@ -261,27 +258,25 @@ exports.domain = function(site, parentCallback) {
     function(cb) {
       exports.wappalyzer(site, cb);
     }
-  ], function(error, results){
-    if (!error) {
-      site = merge(merge(results[0], results[1]), results[2]);
-      site.status.domain = {
-        datetime: new Date().toISOString(),
-        status: true
+  ], function(asyncError, results){
+    helpers.updateSite(
+      site._id,
+      // Set
+      function(newSite) {
+        newSite.status.domain = {
+          datetime: new Date().toISOString(),
+          status: true
+        };
+        if (asyncError) {
+          newSite.status.domain.status = false;
+          newSite.status.domain.message = asyncError;
+        }
+      },
+      // Done
+      function(saveError, doc, success) {
+        parentCallback(asyncError, doc);
       }
-    } else {
-      site.status.domain = {
-        datetime: new Date().toISOString(),
-        status: false,
-        message: error
-      }
-    }
-    site.save(function() {
-      console.log('\n\n\n----------------');
-      console.log('DOMAIN DONE');
-      console.log(site);
-      console.log('----------------\n\n\n');
-      parentCallback(err, site);
-    });
+    );
   }); // async
 
 }
@@ -292,15 +287,37 @@ exports.domain = function(site, parentCallback) {
  */
 exports.ssl = function(site, cb) {
   var parsed = url.parse(site.url);
+
+  // holder for return values
+  var sslUpdates = {};
+
+  // Helper function saves and returns
+  function saveAndCb(status) {
+    helpers.updateSite(
+      site._id,
+      // Set
+      function(newSite) {
+        // Set updates
+        newSite.domain.ssl = sslUpdates;
+        // Set status
+        newSite.status.ssl = status;
+      },
+      // Done
+      function(saveError, doc, success) {
+        cb(null, { domain: { ssl: doc.domain.ssl } });
+      }
+    );
+  }
+
   var req = https.request({
     host: parsed.hostname,
     method: 'get',
     path: '/'
   }, function (res) {
-    site.domain.ssl.allowed = true;
     var cert = res.socket.getPeerCertificate();
     cert.raw = undefined;
-    site.domain.ssl = {
+
+    sslUpdates = {
       allowed: true,
       forced: false,
       //expires: new Date(cert.valid_to).toISOString(),
@@ -311,35 +328,36 @@ exports.ssl = function(site, cb) {
     // See if SSL is forced
     request.get('http://' + parsed.hostname, function (err, res, body) {
       if (res.request.uri.protocol == 'https:') {
-        site.domain.ssl.forced = true;
+        sslUpdates.forced = true;
       }
-      return cb(null, site);
+      saveAndCb({
+        datetime: new Date().toISOString(),
+        status: true
+      });
     });
     
   });
   req.end();
   
-  req.on('error', function(err) {
-    console.log('err');
-    site.domain.ssl = { allowed: false };
-    site.status.ssl = {
+  req.on('error', function(reqError) {
+    console.log(reqError);
+    sslUpdates = { allowed: false };
+    saveAndCb({
       datetime: new Date().toISOString(),
       status: false,
-      message: err
-    }
-    return cb(null, site);
+      message: reqError
+    });
   });
 
   req.on('socket', function (socket) {
     socket.setTimeout(1000);  
     socket.on('timeout', function() {
       console.log('timeout);10');
-      site.domain.ssl = { allowed: false };
-      site.status.domain = {
+      sslUpdates = { allowed: false };
+      saveAndCb({
         datetime: new Date().toISOString(),
         status: true
-      }
-      return cb(null, site);
+      });
     });
   });
 
@@ -350,47 +368,51 @@ exports.ssl = function(site, cb) {
  * Check domain name expiration, ssl status
  */
 exports.whois = function(site, cb) {
-
   var parsed = url.parse(site.url);
   var domain = tld.getDomain(site.url);
-  site.domain = {
+
+  // Tracks site.domain updates
+  var domainUpdates = {
     domain: domain,
-    hostname: parsed.hostname,
-    ssl: {  }
+    hostname: parsed.hostname
   };
-
-  whois.lookup(domain, function(err, data) {
+  // Query whois
+  whois.lookup(domain, function(whoisError, data) {
     if (data) {
-      site.domain.whois = data;
+      domainUpdates.whois = data;
 
-      var match = data.match( /(Registrar Registration Expiration Date|Registry Expiry Date|Expiration Date)\:(.*)/ );
+      var match = data.match(/(Registrar Registration Expiration Date|Registry Expiry Date|Expiration Date)\:(.*)/);
       if (match && match[2]) {
         var expires = match[2].trim();
-        site.domain.expires = expires;
+        domainUpdates.expires = expires;
       } else {
         console.log('COULD NOT REGEX DOMAIN EXPIRATION DATE', data);
       }
-      site.status.whois = {
-        datetime: new Date().toISOString(),
-        status: true
-      }
-      // @TODO should this be saving??
-      site.save(function() {
-        return cb(null, site);
-      });
-    } else {
-      site.status.whois = {
-        datetime: new Date().toISOString(),
-        status: false,
-        message: err
-      }
-      site.save(function() {
-        console.log('WHOIS ERR', err);
-        cb(err, null);
-      });
     }
+    helpers.updateSite(
+      site._id,
+      // Set
+      function(newSite) {
+        // Set updates
+        Object.keys(domainUpdates).forEach(function(key) {
+          newSite.domain[key] = domainUpdates[key];
+        });
+        // Set status
+        newSite.status.whois = {
+          datetime: new Date().toISOString(),
+          status: true
+        };
+        if (whoisError) {
+          newSite.status.whois.status = false;
+          newSite.status.whois.message = whoisError;
+        }
+      },
+      // Done
+      function(saveError, doc, success) {
+        cb(whoisError, { domain: { whois: doc.domain.whois } });
+      }
+    );
   });
-
 }
 
 
@@ -400,17 +422,37 @@ exports.whois = function(site, cb) {
  exports.wappalyzer = function(site, cb) {
 
   var parsed = url.parse(site.url);
-  var options={
+  var options = {
     url: site.url,
     hostname: parsed.hostname,
     debug: false
   }
 
-  wappalyzer.detectFromUrl( options, function(err, apps, appInfo) {
-    if (appInfo) {
-      site.wappalyzer = appInfo;
-    }
-    cb(err, site);
+  wappalyzer.detectFromUrl( options, function(wappError, apps, appInfo) {
+    helpers.updateSite(
+      site._id,
+      // Set
+      function(newSite) {
+        // Set updates
+        if (appInfo) {
+          newSite.wappalyzer = appInfo;
+        }
+        // Set status
+        newSite.status.wappalyzer = {
+          datetime: new Date().toISOString(),
+          status: true
+        };
+        if (wappError) {
+          newSite.status.wappalyzer.status = false;
+          newSite.status.wappalyzer.message = wappError;
+        }
+      },
+      // Done
+      function(saveError, doc, success) {
+        cb(wappError, { wappalyzer: doc.wappalyzer });
+      }
+    );
+
   });
 
 }

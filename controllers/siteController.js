@@ -337,11 +337,7 @@ exports.getSitePlugins = function(req, res) {
         out[key].push(plugins[i]);
       };
       return res.status(200).json(out);
-
     });
-
-
-    
   });
 
 } // function
