@@ -155,15 +155,18 @@ exports.trigger = function(site, key, endpoint, cb) {
     if (!error && res.statusCode === 200) {
       console.log('\n\n\n----------------');
       console.log('trigger request done');
-      console.log(body);
       site.status[key] = {
         datetime: new Date().toISOString(),
         status: true
       }
-      console.log('now saving the site');
+      console.log(site.status[key]);
       console.log('----------------\n\n\n');
       site.save(function() {
+        console.log('\n\n\n----------------');
+        console.log(body);
+        console.log('trigger now saving the site');
         cb(null, body);
+        console.log('----------------\n\n\n');
       });
     }
     else {
