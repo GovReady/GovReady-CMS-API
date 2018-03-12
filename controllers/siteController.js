@@ -225,8 +225,8 @@ exports.postSitePlugins = function(req, res) {
       }
 
       console.log('\n\n\n----------------');
-      console.log('SAVED DOC');
-      console.log(doc);
+      console.log('SAVED DOC PLUGINS');
+      console.log(doc.plugins);
       console.log('----------------\n\n\n');
 
       pluginController.calculateSiteVulnerabilities(site, function(calcErr, out) {
@@ -361,17 +361,23 @@ exports.postSiteStack = function(req, res) {
     //  site.stack.database = 'Mysql ' + phpinfo.mysql['Client API version'];
     //}
     // @todo: mariadb...
+    console.log('\n\n\n----------------');
     console.log('NEW STACK', req.body.stack);
+    console.log('----------------\n\n\n');
     site.stack = req.body.stack;
+    console.log('\n\n\n----------------');
     console.log('NEW SITE STACK', site.stack, site._id);
+    console.log('----------------\n\n\n');
     site = new Site(site);
     site.save(function (saveErr, doc, success) {
       if(saveErr) {
         console.log('ERROR!!!', err, doc._id, success);
         return res.status(200).json(site);
       }
-      console.log('SAVED SITE', site._id);
-      return res.status(200).json(site);
+      console.log('\n\n\n----------------');
+      console.log('NEW SITE STACK', doc.stack, doc._id);
+      console.log('----------------\n\n\n');
+      res.status(200).json(site);
       // saved!
     });
   });
