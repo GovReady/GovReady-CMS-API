@@ -97,7 +97,7 @@ exports.calculateSiteVulnerabilities = function(site, parentCallback) {
       functions.push(function( cb ) {
         Plugin.findOne( { name: item.namespace, platform: platform } ).sort( { fetched: -1 } )
         .then(function (plugin) {
-          console.log('PLUGIN FOUND', item.namespace, plugin);
+          console.log('PLUGIN FOUND', item.namespace);//, plugin);
 
           // We don't have a plugin, or we haven't fetched data for a while: ping updates site
           //console.log(dateCutoff , plugin.fetched);
