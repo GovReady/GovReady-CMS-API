@@ -170,6 +170,7 @@ exports.calculateSiteVulnerabilities = function(site, parentCallback) {
       var key = item.core || item.platform == item.name ? 'core' : 'plugins';
       rtn[key].push(item);
     });
+
     parentCallback(null, rtn);
   }); // async 
 
