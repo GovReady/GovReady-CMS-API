@@ -3,7 +3,7 @@ var User = require('../models/userModel');
 var Site = require('../models/siteModel');
 var Measure = require('../models/measureModel');
 var Submission = require('../models/submissionModel');
-
+var async = require('async');
 var request = require('request');
 var jwt = require('jsonwebtoken');
 var crypto = require("crypto");
@@ -70,9 +70,9 @@ exports.postSiteMeasure = function(req, res) {
       frequency: req.body.frequency,
       due: req.body.due
     });
-    measure.save();
-
-    return res.status(200).json(measure);  
+    measure.save(function() {
+      res.status(200).json(measure);
+    });
   });
   //return res.status(500).json({ err: 'No site found' });  
 
@@ -88,53 +88,62 @@ exports.postSiteMeasuresLoad = function(req, res) {
 
     console.log('/../data/measures-' + req.params.measureStack + '.yml');
 
+    var doc;
     try {
-      var doc = yaml.safeLoad(fs.readFileSync(__dirname + '/../data/measures-' + req.params.measureStack + '.yml', 'utf8'));
+      doc = yaml.safeLoad(fs.readFileSync(__dirname + '/../data/measures-' + req.params.measureStack + '.yml', 'utf8'));
+    } catch (e) {
+      return res.status(500).json({ err: 'Measure stack '+ req.params.measureStack +' not found.' });
+    }
 
-      var measures = [];
-      doc.forEach(function(item, i) {
-      
+    // Run sync async
+    var measures = async.mapSeries(
+      doc,
+      // each measure from doc
+      function (item, meaureCallback) {
         // Set some values
         item.frequency = parseInt(item.frequency);
         item.siteId = req.params.siteId;
         var datetime = new Date();
         item.due = datetime.setSeconds(datetime.getSeconds() + item.frequency);
-
-        // Create monogo Measure
         var measure = new Measure(item);
-        measure.save();
-        measures.push(measure);
-
-        // Deal with submissions that should be added (demo content)
-        if (item.submissions != undefined) {
-          item.submissions.forEach(function(submission, s) {
-            submission.siteId = req.params.siteId;
-            submission.measureId = measure._id;
-            // @TODO remove this since we're now saving to submission
-            if(!submission.title) {
-              submission.title = measure.title;
-            }
-            var submissionElement = new Submission(submission);
-            submissionElement.save();
-          });
+        // Save
+        measure.save(function () {
+          // Deal with submissions that should be added (demo content)
+          if (item.submissions != undefined) {
+            // Run sync async
+            async.mapSeries(
+              item.submissions,
+              // each submission
+              function (submission, submissionCallback) {
+                submission.siteId = req.params.siteId;
+                submission.measureId = measure._id;
+                // @TODO remove this since we're now saving to submission
+                if (!submission.title) {
+                  submission.title = measure.title;
+                }
+                var submissionElement = new Submission(submission);
+                // Save
+                submissionElement.save(function (error) {
+                  submissionCallback();
+                });
+              },
+              // Done
+              function (err, results) {
+                meaureCallback(measure);
+              }
+            );
+          }
+        });
+      },
+      // Done
+      function (err, results) {
+        console.log('Imported ' + measures.length + ' measures');
+        if (res != undefined) {
+          return res.status(200).json(results);
         }
-
-      }); // forEach
-
-      if (res != undefined) {
-        return res.status(200).json(measures);
       }
-      console.log('Imported '+measures.length+' measures');
-      return measures;
-
-    } catch (e) {
-      return res.status(500).json({ err: 'Measure stack '+ req.params.measureStack +' not found.' });
-    }
-
-    //return res.status(200).json(measure);  
+    );
   });
-  //return res.status(500).json({ err: 'No site found' });  
-
 } // function
 
 
@@ -150,7 +159,7 @@ exports.getSiteMeasure = function(req, res) {
     // Create monogo Measure            
     Measure.findOne( { _id: req.params.measureId } )
     .then(function (measure) {
-      return res.status(200).json(measure);
+      res.status(200).json(measure);
     });
 
   });
@@ -171,9 +180,12 @@ exports.patchSiteMeasure = function(req, res) {
     .then(function (measure) {
       
       measure = merge(measure, req.body);
-      measure.save();
-      return res.status(200).json( measure );
-
+      measure.save(function (saveErr) {
+        if (saveErr) {
+          return res.status(500).json(saveErr);
+        }
+        res.status(200).json(measure);
+      });
     });
 
   });
@@ -278,15 +290,16 @@ exports.postSiteMeasuresSubmission = function(req, res) {
         title: measure.title,
         datetime: new Date()
       });
-      submission.save();
 
-      // Set the measure due date
-      measure.datetime = new Date();
-      measure.due = measure.datetime;
-      measure.due = measure.due.setSeconds(measure.due.getSeconds() + measure.frequency);
-      measure.save().then(function() {
-        return res.status(200).json(submission);
-      });      
+      submission.save(function() {
+        // Set the measure due date
+        measure.datetime = new Date();
+        measure.due = measure.datetime;
+        measure.due = measure.due.setSeconds(measure.due.getSeconds() + measure.frequency);
+        measure.save(function() {
+          res.status(200).json(submission);
+        });
+      });
     });
 
   });

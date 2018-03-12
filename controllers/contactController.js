@@ -1,7 +1,7 @@
 // Load required packages
 var Site = require('../models/siteModel');
 var Contact = require('../models/contactModel');
-
+var async = require('async');
 var request = require('request');
 var merge = require('lodash/merge');
 var yaml = require('js-yaml');
@@ -61,9 +61,9 @@ exports.postSiteContact = function(req, res) {
     var contact = new Contact(req.body);
     contact.siteId = req.params.siteId;
     console.log(contact);
-    contact.save();
-    return res.status(200).json( contact ); 
-
+    contact.save(function() {
+      res.status(200).json( contact );
+    });
   });
 
 } // function
@@ -81,9 +81,9 @@ exports.patchSiteContact = function(req, res) {
     .then(function (contact) {
       
       contact = merge(contact, req.body);
-      contact.save();
-      return res.status(200).json( contact );
-
+      contact.save(function () {
+        res.status(200).json( contact );
+      });
     });
 
   });
@@ -131,35 +131,36 @@ exports.postSiteContactsLoad = function(req, res) {
 
     console.log('/../data/contacts-' + req.params.contactStack + '.yml');
 
+    var doc;
     try {
-      var doc = yaml.safeLoad(fs.readFileSync(__dirname + '/../data/contacts-' + req.params.contactStack + '.yml', 'utf8'));
+      doc = yaml.safeLoad(fs.readFileSync(__dirname + '/../data/contacts-' + req.params.contactStack + '.yml', 'utf8'));
+    } catch (e) {
+      return res.status(500).json({ err: 'Contact stack '+ req.params.contactStack +' not found.' });
+    }
+    console.log(doc);
 
-      console.log(doc);
-
-      var contacts = [];
-      doc.forEach(function(item, i) {
-      
+    // Run sync async
+    async.mapSeries(
+      doc,
+      // contact
+      function (item, contactsCallback) {
         // Set some values
         item.siteId = req.params.siteId;
 
         // Create monogo Contact
         var contact = new Contact(item);
-        contact.save();
-        contacts.push(contact);
-
-      }); // forEach
-
-      if (res != undefined) {
-        return res.status(200).json(contacts);
+        contact.save(function() {
+          contactsCallback(contact);
+        });
+      },
+      // Done
+      function (err, results) {
+        console.log('Imported '+contacts.length+' contacts');
+        if (res != undefined) {
+          res.status(200).json(results);
+        }
       }
-      console.log('Imported '+contacts.length+' contacts');
-      return contacts;
-
-    } catch (e) {
-      return res.status(500).json({ err: 'Contact stack '+ req.params.contactStack +' not found.' });
-    }
-
-    //return res.status(200).json(measure);  
+    );
   });
   //return res.status(500).json({ err: 'No site found' });  
 

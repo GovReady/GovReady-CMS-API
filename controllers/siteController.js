@@ -42,16 +42,20 @@ exports.postSite = function(req, res) {
     otherApplication: req.body.otherApplication ? req.body.otherApplication : null,
     status: {}
   });
-  site.save();
-  console.log('CREATED NEW SITE', site);
-
-  userController.addUserSite(req.user, site._id, 'administrator', function(err, user) {
-    if (err) {
-      return res.status(500).json(err);
+  site.save(function(saveErr) {
+    if (saveErr) {
+      return res.status(500).json(saveErr);
     }
-    return res.status(200).json(site);
+
+    console.log('CREATED NEW SITE', site);
+
+    userController.addUserSite(req.user, site._id, 'administrator', function(err, user) {
+      if (err) {
+        return res.status(500).json(err);
+      }
+      return res.status(200).json(site);
+    });
   });
-  
 } // function
 
 
@@ -64,9 +68,13 @@ exports.patchSite = function(req, res) {
   .then(function (site) {
 
     site = merge(site, req.body);
-    site.save();
-    return res.status(200).json( site );
+    site.save(function(saveErr) {
+      if (saveErr) {
+        return res.status(500).json(saveErr);
+      }
 
+      res.status(200).json(site);
+    });
   });
 
 } // function
@@ -80,6 +88,7 @@ exports.deleteSite = function(req, res) {
   .then(function (site) {
     console.log('DELETING SITE', site._id);
 
+    // @TODO do this with async
     Contact.find({ siteId: site._id }).remove().exec();
     Measure.find({ siteId: site._id }).remove().exec();
     Submission.find({ siteId: site._id }).remove().exec();
@@ -113,7 +122,8 @@ exports.loadDemoSite = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
-   
+
+    // @TODO do this with async
     // Delete old associated Documents
     Contact.find({ siteId: req.params.siteId }).remove().exec();
     Measure.find({ siteId: req.params.siteId }).remove().exec();
@@ -154,8 +164,13 @@ exports.postSiteAccounts = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     site.accounts = req.body.accounts;
-    site.save();
-    return res.status(200).json(site);  
+    site.save(function(saveErr) {
+      if (saveErr) {
+        return res.status(500).json(saveErr);
+      }
+
+      res.status(200).json(site);
+    });
   });
 
 } // function
@@ -196,17 +211,17 @@ exports.postSitePlugins = function(req, res) {
   .then(function (site) {
     site.plugins = req.body.plugins;
     console.log('PLUGINS POST');
-    site.save(function (saveError, doc, success) {
+    site.save(function (saveErr, doc, success) {
       console.log('\n\n\n----------------');
       console.log('SAVED DOC');
       console.log(doc);
       console.log('----------------\n\n\n');
-      if (saveError) {
-        return res.status(500).json( saveError );
+      if (saveErr) {
+        return res.status(500).json( saveErr );
       }
 
-      pluginController.calculateSiteVulnerabilities(site, function(calcError, out) {
-        if (calcError) {
+      pluginController.calculateSiteVulnerabilities(site, function(calcErr, out) {
+        if (calcErr) {
           return res.status(500).json( calcError );
         }
         else {
@@ -341,8 +356,8 @@ exports.postSiteStack = function(req, res) {
     site.stack = req.body.stack;
     console.log('NEW SITE STACK', site.stack, site._id);
     site = new Site(site);
-    site.save(function (err, doc, success) {
-      if(err) {
+    site.save(function (saveErr, doc, success) {
+      if(saveErr) {
         console.log('ERROR!!!', err, doc._id, success);
         return res.status(200).json(site);
       }
@@ -446,8 +461,13 @@ exports.postSiteChangeMode = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     site.mode = req.body.mode;
-    site.save();
-    return res.status(200).json(site.mode);  
+    site.save(function(saveErr) {
+      if (saveErr) {
+        return res.status(500).json(saveErr);
+      }
+
+      res.status(200).json(site.mode);
+    });
   });
 
 } // function

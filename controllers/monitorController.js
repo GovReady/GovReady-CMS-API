@@ -158,8 +158,9 @@ exports.trigger = function(site, key, endpoint, cb) {
         datetime: new Date().toISOString(),
         status: true
       }
-      site.save();
-      cb(null, body);
+      site.save(function() {
+        cb(null, body);
+      });
     }
     else {
       console.log('ERROR IN SITE TRIGGER CALLBACK: status: '+res.statusCode, error, body);
@@ -168,8 +169,9 @@ exports.trigger = function(site, key, endpoint, cb) {
         status: false,
         message: error
       }
-      site.save();
-      cb(error, null);
+      site.save(function() {
+        cb(error, null);
+      });
     }
   });
 }
@@ -213,8 +215,10 @@ exports.ping = function(site, cb) {
         datetime: new Date().toISOString(),
         status: true
       }
-      site.save();
-      cb(null, res.statusCode);
+      site.save(function() {
+        cb(null, res.statusCode);
+      });
+
     }
     // No error but website not ok
     //else if (!error) {}
@@ -226,9 +230,10 @@ exports.ping = function(site, cb) {
         status: false,
         message: msg
       }
-      site.save();
-      // @todo: send emails?
-      cb(msg, null);
+      site.save(function() {
+        // @todo: send emails?
+        cb(msg, null);
+      });
     }
   });
 }
@@ -237,7 +242,7 @@ exports.ping = function(site, cb) {
 /** 
  * Check domain name expiration, ssl status
  */
-exports.domain = function(site, cb) {
+exports.domain = function(site, parentCallback) {
 
   async.parallel([
     function(cb) {
@@ -263,9 +268,9 @@ exports.domain = function(site, cb) {
         message: error
       }
     }
-    site.save();
-    cb(err, site);
-
+    site.save(function() {
+      parentCallback(err, site);
+    });
   }); // async
 
 }
@@ -351,25 +356,27 @@ exports.whois = function(site, cb) {
       if (match && match[2]) {
         var expires = match[2].trim();
         site.domain.expires = expires;
-      }
-      else {
+      } else {
         console.log('COULD NOT REGEX DOMAIN EXPIRATION DATE', data);
       }
       site.status.whois = {
         datetime: new Date().toISOString(),
         status: true
       }
-      return cb(null, site);
-    }
-    else {
+      // @TODO should this be saving??
+      site.save(function() {
+        return cb(null, site);
+      });
+    } else {
       site.status.whois = {
         datetime: new Date().toISOString(),
         status: false,
         message: err
       }
-      site.save();
-      console.log('WHOIS ERR', err);
-      return cb(err, null);
+      site.save(function() {
+        console.log('WHOIS ERR', err);
+        cb(err, null);
+      });
     }
   });
 

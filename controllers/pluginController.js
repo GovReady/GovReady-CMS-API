@@ -103,19 +103,20 @@ exports.calculateSiteVulnerabilities = function(site, parentCallback) {
           //console.log(dateCutoff , plugin.fetched);
           if (plugin === null || dateCutoff > plugin.fetched) {
             //console.log('LOOKING UP', item.namespace, platform);
-            Plugin.find({ name: item.namespace, platform: platform }).remove().exec();
-            switch ( platform ) {
-              case 'wordpress':
-                getWordPressPluginVulnerabilities(item.type ? item.type : 'plugins', item.namespace, function(err, data) {
-                  cb(err, data);
-                });
-                break;
-              case 'drupal':
-                getDrupalModuleVulnerabilities(item.type ? item.type : majorVersion, item.namespace, function(err, data) {
-                  cb(err, data);
-                });
-                break;
-            }
+            Plugin.find({ name: item.namespace, platform: platform }).remove().exec(function() {
+              switch ( platform ) {
+                case 'wordpress':
+                  getWordPressPluginVulnerabilities(item.type ? item.type : 'plugins', item.namespace, function(err, data) {
+                    cb(err, data);
+                  });
+                  break;
+                case 'drupal':
+                  getDrupalModuleVulnerabilities(item.type ? item.type : majorVersion, item.namespace, function(err, data) {
+                    cb(err, data);
+                  });
+                  break;
+              }
+            });
           }
           // Return the plugin from the db
           else {

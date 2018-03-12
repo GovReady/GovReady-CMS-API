@@ -62,9 +62,9 @@ exports.postSiteScan = function(req, res) {
       result: req.body.result ? req.body.result : null,
       data: req.body.data ? JSON.parse(req.body.data) : null
     });
-    scan.save();
-
-    return res.status(200).json(scan);  
+    scan.save(function() {
+      res.status(200).json(scan);
+    });
   });
 
 } // function

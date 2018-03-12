@@ -38,8 +38,9 @@ exports.getApplicationNews = function(req, res) {
 exports.postApplication = function(req, res) {
 
   var app = new Application(req.body);
-  app.save();
-  return res.status(200).json( app ); 
+  app.save(function() {
+    return res.status(200).json( app );
+  });
 
 } // function
 
