@@ -209,16 +209,25 @@ exports.postSitePlugins = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
+    console.log('\n\n\n----------------');
+    console.log('Plugins before');
+    console.log(site.plugins);
+    console.log('----------------\n\n\n');
     site.plugins = req.body.plugins;
+    console.log('\n\n\n----------------');
+    console.log('Plugins after');
+    console.log(site.plugins);
+    console.log('----------------\n\n\n');
     console.log('PLUGINS POST');
     site.save(function (saveErr, doc, success) {
+      if (saveErr) {
+        return res.status(500).json( saveErr );
+      }
+
       console.log('\n\n\n----------------');
       console.log('SAVED DOC');
       console.log(doc);
       console.log('----------------\n\n\n');
-      if (saveErr) {
-        return res.status(500).json( saveErr );
-      }
 
       pluginController.calculateSiteVulnerabilities(site, function(calcErr, out) {
         if (calcErr) {
