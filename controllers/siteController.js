@@ -196,17 +196,25 @@ exports.postSitePlugins = function(req, res) {
   .then(function (site) {
     site.plugins = req.body.plugins;
     console.log('PLUGINS POST');
-    site.save();
-    pluginController.calculateSiteVulnerabilities(site, function(err, out) {
-      if (err) {
-        return res.status(500).json( err );
+    site.save(function (saveError, doc, success) {
+      console.log('\n\n\n----------------');
+      console.log('SAVED DOC');
+      console.log(doc);
+      console.log('----------------\n\n\n');
+      if (saveError) {
+        return res.status(500).json( saveError );
       }
-      else {
-        return res.status(200).json( site );
-      }
+
+      pluginController.calculateSiteVulnerabilities(site, function(calcError, out) {
+        if (calcError) {
+          return res.status(500).json( calcError );
+        }
+        else {
+          return res.status(200).json( site );
+        }
+      });
     });
   });
-
 } // function
 
 
@@ -217,6 +225,11 @@ exports.getSitePlugins = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
+
+    console.log('\n\n\n----------------');
+    console.log('GETTING PLUGINS');
+    console.log(site);
+    console.log('----------------\n\n\n');
 
     //if (!site.plugins) { // @todo?
     //  return res.status(500).json();  
@@ -326,14 +339,17 @@ exports.postSiteStack = function(req, res) {
     // @todo: mariadb...
     console.log('NEW STACK', req.body.stack);
     site.stack = req.body.stack;
-    console.log('NEW SITE', site);
+    console.log('NEW SITE STACK', site.stack, site._id);
     site = new Site(site);
     site.save(function (err, doc, success) {
-      console.log('ERROR!!!', err, doc, success);
+      if(err) {
+        console.log('ERROR!!!', err, doc._id, success);
+        return res.status(200).json(site);
+      }
+      console.log('SAVED SITE', site._id);
+      return res.status(200).json(site);
       // saved!
     });
-    console.log('SAVED SITE', site);
-    return res.status(200).json(site);
   });
 
 } // function

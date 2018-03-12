@@ -54,7 +54,7 @@ exports.getSiteVulnerabilities = function(req, res) {
 /** 
  * Figure out what the vulnerabilities are for site's application.
  */
-exports.calculateSiteVulnerabilities = function(site, cb) {
+exports.calculateSiteVulnerabilities = function(site, parentCallback) {
 
   var functions = [];
   var dateCutoff = new Date();
@@ -169,8 +169,7 @@ exports.calculateSiteVulnerabilities = function(site, cb) {
       var key = item.core || item.platform == item.name ? 'core' : 'plugins';
       rtn[key].push(item);
     });
-    return cb(null, rtn);
-
+    parentCallback(null, rtn);
   }); // async 
 
 } // function
@@ -204,20 +203,25 @@ var getWordPressPluginVulnerabilities = function(type, name, cb) {
         }
       }
       plugin = new Plugin(data);
-      plugin.save();
+      plugin.save(function() {
+        cb(err, data);
+      });
       //console.log('SAVING PLUGIN: '+plugin);
-    }
-    else if (!err) {
-      plugin = new Plugin( {
+    } else if (!err) {
+      plugin = new Plugin({
         name: name,
         platform: 'wordpress',
         fetched: Date.now()
       });
-      plugin.save();
-      err = null;//body;
-      data = null;
+      plugin.save(function() {
+        err = null;//body;
+        data = null;
+        cb(err, data);
+      });
+
+    } else {
+      cb(err, data);
     }
-    cb(err, data);
   });
 }
 
@@ -268,24 +272,24 @@ var getDrupalModuleVulnerabilities = function(type, name, cb) {
         
         plugin = new Plugin(data);
         console.log(plugin)
-        plugin.save();
-        return cb(err, data);
+        plugin.save(function() {
+          cb(err, data);
+        });
       });
 
-    }
-    else if (!err) {
+    } else if (!err) {
       plugin = new Plugin( {
         name: name,
         platform: 'drupal',
         fetched: Date.now()
       });
-      plugin.save();
-      err = body;
-      data = null;
-      return cb(null, plugin);
-    }
-    else {
-      return cb(err, null);
+      plugin.save(function() {
+        err = body;
+        data = null;
+        cb(null, plugin);
+      });
+    } else {
+      cb(err, null);
     }
 
   });
