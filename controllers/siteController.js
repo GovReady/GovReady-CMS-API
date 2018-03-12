@@ -376,6 +376,7 @@ exports.postSiteStack = function(req, res) {
       }
       console.log('\n\n\n----------------');
       console.log('NEW SITE STACK', doc.stack, doc._id);
+      console.log(site.plugins);
       console.log('----------------\n\n\n');
       res.status(200).json(site);
       // saved!

@@ -276,6 +276,10 @@ exports.domain = function(site, parentCallback) {
       }
     }
     site.save(function() {
+      console.log('\n\n\n----------------');
+      console.log('DOMAIN DONE');
+      console.log(site);
+      console.log('----------------\n\n\n');
       parentCallback(err, site);
     });
   }); // async
