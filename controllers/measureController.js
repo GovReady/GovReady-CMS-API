@@ -205,7 +205,7 @@ exports.getSiteSubmissions = function(req, res) {
     console.log('LIMIT'+limit);
 
     Submission.find( { siteId: req.params.siteId } )
-    .sort([['datetime', -1]])
+    .sort([['datetime', 1]])
     .limit(limit)
     .then(function (submissions) {
       var ids = [];
@@ -230,6 +230,9 @@ exports.getSiteSubmissions = function(req, res) {
 
     }); // Submission.find();
 
+  }).catch(function(e) {
+    console.log(e);
+    return res.status(200).json([]);
   }); //Site.findOne();
 
 } // function
@@ -248,7 +251,7 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
 
       var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit) : 100;
       Submission.find( { measureId: req.params.measureId } )
-      .sort([['datetime', -1]])
+      .sort([['datetime', 1]])
       .limit(limit)
       .then(function (submissions) {
         // @TODO remove this since we're now saving to submission
@@ -261,9 +264,12 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
         return res.status(200).json(submissions);
       });
 
-      return res.status(200).json(submission);  
+      // return res.status(200).json(submission);
     });
 
+  }).catch(function(e) {
+    console.log(e);
+    return res.status(200).json([]);
   });
 
 } // function
@@ -302,6 +308,8 @@ exports.postSiteMeasuresSubmission = function(req, res) {
       });
     });
 
+  }).catch(function(e) {
+    return res.status(500).json(e);
   });
 
 } // function
