@@ -205,7 +205,7 @@ exports.getSiteSubmissions = function(req, res) {
     console.log('LIMIT'+limit);
 
     Submission.find( { siteId: req.params.siteId } )
-    .sort([['datetime', 1]])
+    .sort({ datetime: -1 })
     .limit(limit)
     .then(function (submissions) {
       var ids = [];
@@ -251,7 +251,7 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
 
       var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit) : 100;
       Submission.find( { measureId: req.params.measureId } )
-      .sort([['datetime', 1]])
+      .sort({ datetime: -1 })
       .limit(limit)
       .then(function (submissions) {
         // @TODO remove this since we're now saving to submission
