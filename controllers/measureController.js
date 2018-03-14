@@ -204,66 +204,30 @@ exports.getSiteSubmissions = function(req, res) {
     var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit): 20;
     console.log('LIMIT'+limit);
 
-
-    Submission.find( { siteId: req.params.siteId } )
-      .sort({ datetime: 1 })
-      .exec(function (err, submissions) {
-        console.log('\n\n\n Submission 1:');
-        console.log(submissions.map(function(submission) {
-          return submission.datetime;
-        }))
-      });
-
-    Submission.find( { siteId: req.params.siteId } )
-      .sort('-datetime')
-      .exec(function (err, submissions) {
-        console.log('\n\n\n Submission 2:');
-        console.log(submissions.map(function(submission) {
-          return submission.datetime;
-        }))
-      });
-
+    // @TODO datetime sort is broken (probably because it thinks its Date, but its really a string)
     Submission.find( { siteId: req.params.siteId } )
       .sort({ _id: -1 })
-      .exec(function (err, submissions) {
-        console.log('\n\n\n Submission 3:');
-        console.log(submissions.map(function(submission) {
-          return submission.datetime;
-        }))
-      });
-
-    Submission.find( { siteId: req.params.siteId } )
-      .sort({ _id: 1 })
-      .exec(function (err, submissions) {
-        console.log('\n\n\n Submission 4:');
-        console.log(submissions.map(function(submission) {
-          return submission.datetime;
-        }))
-      });
-
-    Submission.find( { siteId: req.params.siteId } )
-    .sort({ datetime: -1 })
-    .limit(limit)
-    .then(function (submissions) {
-      var ids = [];
-      submissions.forEach(function(item, i) {
-        ids.push(item.measureId);
-      });
-
-      Measure.find( { _id: { $in: ids } } )
-      .then(function (measures) {
-        // @TODO remove this since we're now saving to submission
-        submissions.forEach(function(s, i) {
-          measures.forEach(function(m, j) {
-            if ( m._id.equals(s.measureId) && !submissions[i].title ) {
-              submissions[i] = submissions[i].toObject();
-              submissions[i].title = m.title;
-            }
-          });
+      .limit(limit)
+      .then(function (submissions) {
+        var ids = [];
+        submissions.forEach(function(item, i) {
+          ids.push(item.measureId);
         });
-        return res.status(200).json(submissions);  
-        
-      }); // Measure.find();
+
+        Measure.find( { _id: { $in: ids } } )
+        .then(function (measures) {
+          // @TODO remove this since we're now saving to submission
+          submissions.forEach(function(s, i) {
+            measures.forEach(function(m, j) {
+              if ( m._id.equals(s.measureId) && !submissions[i].title ) {
+                submissions[i] = submissions[i].toObject();
+                submissions[i].title = m.title;
+              }
+            });
+          });
+          return res.status(200).json(submissions);
+
+        }); // Measure.find();
 
     }); // Submission.find();
 
@@ -286,9 +250,10 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
     Measure.findOne( { _id: req.params.measureId } )
     .then(function (measure) {
 
+      // @TODO datetime sort is broken (probably because it thinks its Date, but its really a string)
       var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit) : 100;
       Submission.find( { measureId: req.params.measureId } )
-      .sort({ datetime: -1 })
+      .sort({ _id: -1 })
       .limit(limit)
       .then(function (submissions) {
         // @TODO remove this since we're now saving to submission
