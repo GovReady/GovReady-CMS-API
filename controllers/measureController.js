@@ -206,7 +206,7 @@ exports.getSiteSubmissions = function(req, res) {
 
 
     Submission.find( { siteId: req.params.siteId } )
-      .sort({ datetime: -1 })
+      .sort({ datetime: 1 })
       .exec(function (err, submissions) {
         console.log('\n\n\n Submission 1:');
         console.log(submissions.map(function(submission) {
@@ -215,7 +215,7 @@ exports.getSiteSubmissions = function(req, res) {
       });
 
     Submission.find( { siteId: req.params.siteId } )
-      .sort({ datetime: 'desc' })
+      .sort('-datetime')
       .exec(function (err, submissions) {
         console.log('\n\n\n Submission 2:');
         console.log(submissions.map(function(submission) {
@@ -224,7 +224,7 @@ exports.getSiteSubmissions = function(req, res) {
       });
 
     Submission.find( { siteId: req.params.siteId } )
-      .sort([['datetime', -1]])
+      .sort({ _id: -1 })
       .exec(function (err, submissions) {
         console.log('\n\n\n Submission 3:');
         console.log(submissions.map(function(submission) {
@@ -232,7 +232,8 @@ exports.getSiteSubmissions = function(req, res) {
         }))
       });
 
-    Submission.find( { siteId: req.params.siteId }, null, {sort: {datetime: -1}} )
+    Submission.find( { siteId: req.params.siteId } )
+      .sort({ _id: 1 })
       .exec(function (err, submissions) {
         console.log('\n\n\n Submission 4:');
         console.log(submissions.map(function(submission) {
