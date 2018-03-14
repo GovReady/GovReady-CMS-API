@@ -205,6 +205,43 @@ exports.getSiteSubmissions = function(req, res) {
     console.log('LIMIT'+limit);
 
     Submission.find( { siteId: req.params.siteId } )
+      .then(function (submissions) {
+        console.log('\n\n\n Submission 1:');
+        console.log(submissions.map(function(submission) {
+          return submission.datetime;
+        }))
+      });
+
+    Submission.find( { siteId: req.params.siteId } )
+      .sort({ datetime: -1 })
+      .then(function (submissions) {
+        console.log('\n\n\n Submission 2:');
+        console.log(submissions.map(function(submission) {
+          return submission.datetime;
+        }))
+      });
+
+    Submission.find( { siteId: req.params.siteId } )
+      .sort({ datetime: -1 })
+      .limit(limit)
+      .then(function (submissions) {
+        console.log('\n\n\n Submission 3:');
+        console.log(submissions.map(function(submission) {
+          return submission.datetime;
+        }))
+      });
+
+    Submission.find( { siteId: req.params.siteId } )
+      .sort({ datetime: 1 })
+      .limit(limit)
+      .exec(function (err, submissions) {
+        console.log('\n\n\n Submission 4:');
+        console.log(submissions.map(function(submission) {
+          return submission.datetime;
+        }))
+      });
+
+    Submission.find( { siteId: req.params.siteId } )
     .sort({ datetime: -1 })
     .limit(limit)
     .then(function (submissions) {
