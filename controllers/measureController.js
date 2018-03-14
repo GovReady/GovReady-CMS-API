@@ -204,8 +204,10 @@ exports.getSiteSubmissions = function(req, res) {
     var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit): 20;
     console.log('LIMIT'+limit);
 
+
     Submission.find( { siteId: req.params.siteId } )
-      .then(function (submissions) {
+      .sort({ datetime: -1 })
+      .exec(function (err, submissions) {
         console.log('\n\n\n Submission 1:');
         console.log(submissions.map(function(submission) {
           return submission.datetime;
@@ -213,8 +215,8 @@ exports.getSiteSubmissions = function(req, res) {
       });
 
     Submission.find( { siteId: req.params.siteId } )
-      .sort({ datetime: -1 })
-      .then(function (submissions) {
+      .sort({ datetime: 'desc' })
+      .exec(function (err, submissions) {
         console.log('\n\n\n Submission 2:');
         console.log(submissions.map(function(submission) {
           return submission.datetime;
@@ -222,18 +224,15 @@ exports.getSiteSubmissions = function(req, res) {
       });
 
     Submission.find( { siteId: req.params.siteId } )
-      .sort({ datetime: -1 })
-      .limit(limit)
-      .then(function (submissions) {
+      .sort([['datetime', -1]])
+      .exec(function (err, submissions) {
         console.log('\n\n\n Submission 3:');
         console.log(submissions.map(function(submission) {
           return submission.datetime;
         }))
       });
 
-    Submission.find( { siteId: req.params.siteId } )
-      .sort({ datetime: -1 })
-      .limit(limit)
+    Submission.find( { siteId: req.params.siteId }, null, {sort: {datetime: -1}} )
       .exec(function (err, submissions) {
         console.log('\n\n\n Submission 4:');
         console.log(submissions.map(function(submission) {
