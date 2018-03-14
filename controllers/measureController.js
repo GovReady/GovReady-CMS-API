@@ -232,7 +232,7 @@ exports.getSiteSubmissions = function(req, res) {
       });
 
     Submission.find( { siteId: req.params.siteId } )
-      .sort({ datetime: 1 })
+      .sort({ datetime: -1 })
       .limit(limit)
       .exec(function (err, submissions) {
         console.log('\n\n\n Submission 4:');
