@@ -253,18 +253,18 @@ exports.getSiteMeasuresSubmissions = function(req, res) {
       // @TODO datetime sort is broken (probably because it thinks its Date, but its really a string)
       var limit = req.query.limit && parseInt(req.query.limit) < 100 ? parseInt(req.query.limit) : 100;
       Submission.find( { measureId: req.params.measureId } )
-      .sort({ _id: -1 })
-      .limit(limit)
-      .then(function (submissions) {
-        // @TODO remove this since we're now saving to submission
-        submissions.forEach(function(s, i) {
-          if(!submissions[i].title) {
-            submissions[i] = submissions[i].toObject();
-            submissions[i].title = measure.title;
-          }
+        .sort({ _id: -1 })
+        .limit(limit)
+        .then(function (submissions) {
+          // @TODO remove this since we're now saving to submission
+          submissions.forEach(function(s, i) {
+            if(!submissions[i].title) {
+              submissions[i] = submissions[i].toObject();
+              submissions[i].title = measure.title;
+            }
+          });
+          return res.status(200).json(submissions);
         });
-        return res.status(200).json(submissions);
-      });
 
       // return res.status(200).json(submission);
     });
