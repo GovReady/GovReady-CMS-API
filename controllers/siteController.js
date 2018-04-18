@@ -336,10 +336,10 @@ exports.getSitePlugins = function(req, res) {
         var key = plugins[i].core ? 'core' : 'plugins';
         out[key].push(plugins[i]);
       };
-      // Add status
-      if (site.status && site.status.plugins) {
-        out.lastStatus = site.status.plugins;
-      }
+      // // Add status
+      // if (site.status && site.status.plugins) {
+      //   out.lastStatus = site.status.plugins;
+      // }
       return res.status(200).json(out);
     });
   });
@@ -397,9 +397,9 @@ exports.getSiteStack = function(req, res) {
       return res.status(500).json();  
     }
     // Add status
-    if (site.status && site.status.stack) {
-      site.stack.lastStatus = site.status.stack;
-    }
+    // if (site.status && site.status.stack) {
+    //   site.stack.lastStatus = site.status.stack;
+    // }
     return res.status(200).json(site.stack);
   });
 
