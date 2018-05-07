@@ -164,6 +164,14 @@ exports.postSiteAccounts = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     site.accounts = req.body.accounts;
+
+    // Update status
+    site.status = site.status || {};
+    site.status.accounts = {
+      datetime: new Date().toISOString(),
+      status: true
+    };
+
     site.save(function(saveErr) {
       if (saveErr) {
         return res.status(500).json(saveErr);
@@ -196,7 +204,11 @@ exports.getSiteAccounts = function(req, res) {
     //    accounts.push(item);
     //  }
     //}); // forEach
-    return res.status(200).json(site.accounts);
+
+    return res.status(200).json({
+      lastStatus: site.status && site.status.accounts ? site.status.accounts : null,
+      accounts: site.accounts
+    });
   });
 
 } // function
@@ -402,10 +414,12 @@ exports.getSiteStack = function(req, res) {
     if (!site.stack) {
       return res.status(500).json();  
     }
+    
     // Add status
     if (site.status && site.status.stack) {
       site.stack.lastStatus = site.status.stack;
     }
+
     return res.status(200).json(site.stack);
   });
 
@@ -422,6 +436,12 @@ exports.getSiteDomain = function(req, res) {
     if (!site.domain) {
       return res.status(500).json();  
     }
+
+    // Add status
+    if (site.status && site.status.domain) {
+      site.domain.lastStatus = site.status.domain;
+    }
+
     return res.status(200).json(site.domain);
   });
 
