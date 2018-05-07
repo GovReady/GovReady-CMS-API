@@ -47,7 +47,7 @@ exports.postSite = function(req, res) {
       return res.status(500).json(saveErr);
     }
 
-    console.log('CREATED NEW SITE', site);
+    console.log('CREATED NEW SITE', site._id);
 
     userController.addUserSite(req.user, site._id, 'administrator', function(err, user) {
       if (err) {
@@ -209,16 +209,8 @@ exports.postSitePlugins = function(req, res) {
 
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
-    console.log('\n\n\n----------------');
-    console.log('Plugins before');
-    console.log(site.plugins);
-    console.log('----------------\n\n\n');
+    console.log('PLUGINS POST', site._id);
     site.plugins = req.body.plugins;
-    console.log('\n\n\n----------------');
-    console.log('Plugins after');
-    console.log(site.plugins);
-    console.log('----------------\n\n\n');
-    console.log('PLUGINS POST');
     site.save(function (saveErr, doc, success) {
       if (saveErr) {
         return res.status(500).json( saveErr );
@@ -251,8 +243,7 @@ exports.getSitePlugins = function(req, res) {
   .then(function (site) {
 
     console.log('\n\n\n----------------');
-    console.log('GETTING PLUGINS');
-    console.log(site);
+    console.log('GETTING PLUGINS', site._id);
     console.log('----------------\n\n\n');
 
     //if (!site.plugins) { // @todo?
@@ -336,10 +327,10 @@ exports.getSitePlugins = function(req, res) {
         var key = plugins[i].core ? 'core' : 'plugins';
         out[key].push(plugins[i]);
       };
-      // // Add status
-      // if (site.status && site.status.plugins) {
-      //   out.lastStatus = site.status.plugins;
-      // }
+      // Add status
+      if (site.status && site.status.plugins) {
+        out.lastStatus = site.status.plugins;
+      }
       return res.status(200).json(out);
     });
   });
@@ -376,7 +367,6 @@ exports.postSiteStack = function(req, res) {
       }
       console.log('\n\n\n----------------');
       console.log('NEW SITE STACK', doc.stack, doc._id);
-      console.log(site.plugins);
       console.log('----------------\n\n\n');
       res.status(200).json(site);
       // saved!
@@ -397,9 +387,9 @@ exports.getSiteStack = function(req, res) {
       return res.status(500).json();  
     }
     // Add status
-    // if (site.status && site.status.stack) {
-    //   site.stack.lastStatus = site.status.stack;
-    // }
+    if (site.status && site.status.stack) {
+      site.stack.lastStatus = site.status.stack;
+    }
     return res.status(200).json(site.stack);
   });
 
@@ -442,7 +432,7 @@ exports.getSiteStatus = function(req, res) {
  * Endpoint /sites/:siteId/recommended for GET
  */
 exports.getSiteRecommended = function(req, res) {
-console.log('REC');
+  console.log('REC');
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
     try {
