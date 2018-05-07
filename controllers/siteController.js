@@ -211,6 +211,14 @@ exports.postSitePlugins = function(req, res) {
   .then(function (site) {
     console.log('PLUGINS POST', site._id);
     site.plugins = req.body.plugins;
+
+    // Update status
+    site.status = site.status || {};
+    site.status.plugins = {
+      datetime: new Date().toISOString(),
+      status: true
+    };
+
     site.save(function (saveErr, doc, success) {
       if (saveErr) {
         return res.status(500).json( saveErr );
@@ -347,19 +355,27 @@ exports.postSiteStack = function(req, res) {
   Site.findOne( { _id: req.params.siteId } )
   .then(function (site) {
 
+    console.log('POSTING STACK', site._id);
+
     // @todo
     //if ( phpinfo.mysql != undefined ) {
     //  site.stack.database = 'Mysql ' + phpinfo.mysql['Client API version'];
     //}
     // @todo: mariadb...
-    console.log('\n\n\n----------------');
-    console.log('NEW STACK', req.body.stack);
-    console.log('----------------\n\n\n');
     site.stack = req.body.stack;
+
     console.log('\n\n\n----------------');
     console.log('NEW SITE STACK', site.stack, site._id);
     console.log('----------------\n\n\n');
     site = new Site(site);
+
+    // Update status
+    site.status = site.status || {};
+    site.status.stack = {
+      datetime: new Date().toISOString(),
+      status: true
+    };
+
     site.save(function (saveErr, doc, success) {
       if(saveErr) {
         console.log('ERROR!!!', err, doc._id, success);
